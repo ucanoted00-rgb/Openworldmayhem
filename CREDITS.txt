@@ -1,0 +1,27 @@
+Árvores: "Trees Low Poly" por Igor_K. (https://sketchfab.com/Igor_K.)
+https://sketchfab.com/3d-models/trees-low-poly-1d2dcca2ccb1496c85b7cc5789a2a261
+Licença CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) — modificado: convertido, texturas redimensionadas e LOD de folhas.
+Pedras: pack "Low Poly Forest". Personagem: "Simple Low Poly Character" por PIXELOKAY (https://sketchfab.com/PIXELOKAY)
+https://sketchfab.com/3d-models/simple-low-poly-character-5ee952af02634ffeab649ab9fba66bfb
+Licença CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) — modificado: eixos/escala convertidos, esqueleto e pesos de skin adicionados.
+
+Animações: "Universal Animation Library [Standard]" por Quaternius (https://quaternius.com) — CC0 1.0, retargetadas para o esqueleto do jogo.
+
+Toras: "Wooden Logs - Asset Pack" por Samuel Francis Johnson / Oneironauticus (https://sketchfab.com/oneironauticus)
+https://sketchfab.com/3d-models/wooden-logs-asset-pack-441fb13a0bf24f9aa8c4a219e5ab9be3
+Licença CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) — modificado: refeitas como cilindros low poly de 8 lados, sem textura.
+
+Músicas (na raiz do jogo):
+- Tela inicial: "The Show Must Go On" — Toilet Takeover OST (the-show-must-go-on.mp3)
+- Menu de pausa: "Rush Hour" — ST: Blockade OST (rush-hour.mp3)
+- Configurações: "Chill Synthwave - Digital Sunset" — Music by Karl Casey @ White Bat Audio (https://karlcasey.bandcamp.com), livre para projetos criativos com crédito (digital-sunset.mp3)
+- Deserto (no jogo): "Desolate Desert" — Super Mombo Quest OST (desolate-desert.mp3)
+
+Chão: textura de grama fornecida pelo autor do jogo (grass.js, tile 256x256 sem emenda).
+
+Plantas do deserto: "Desert Shrubs" por evolveduk (https://sketchfab.com/evolveduk)
+https://sketchfab.com/3d-models/desert-shrubs-3f116a7e0c464f2798fe25c7dae4fabb
+Licença: Sketchfab Standard (https://sketchfab.com/licenses) — modificado: plantas separadas, texturas reduzidas, malhas otimizadas.
+
+This work is based on "Scorpion" (https://sketchfab.com/3d-models/scorpion-32e8c714b54e4833af1e58a38511bcf9) by kenchoo (https://sketchfab.com/kenchoo) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+Modificado: esqueleto/pose idle originais mantidos; animações de corrida e ataque criadas e assadas em keyframes; malha quantizada; material próprio (o original não tinha textura).
