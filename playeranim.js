@@ -707,9 +707,9 @@ function update(dt,s){
  const fl=ST.fl.x;
  T.LA[2]+=fl*1.1;T.RA[2]-=fl*1.1;T.LA[0]+=fl*.5;T.RA[0]+=fl*.5;
 
- /* cabeça: olha pra onde a câmera olha e compensa a inclinação/torção do corpo */
+ /* cabeça: fica alinhada ao corpo (não segue a câmera) e compensa a inclinação/torção do corpo */
  const tw=twist*dyn;
- T.hm=[clamp(-cp,-.9,.9)-ST.lean.x*.7,clamp(wrap(camYaw-ST.yaw),-1.2,1.2)-tw*.6+idleHead,-ST.roll.x*.5];
+ T.hm=[-ST.lean.x*.7,-tw*.6+idleHead,-ST.roll.x*.5];   // a cabeça não segue mais a câmera (só compensa o corpo)
 
  const k=1-Math.exp(-dt*(16+24*A));                   // passada rápida precisa de resposta rápida (senão a perna "some" correndo)
  for(const nm in MAP){
