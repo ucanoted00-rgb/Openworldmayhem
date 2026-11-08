@@ -1,0 +1,148 @@
+{
+  "schema": "owm-hud-layout",
+  "version": 2,
+  "mode": "original",
+  "coordinateSystem": "css-anchor-offsets",
+  "description": "Layout original do HUD. As posições são definidas pelo CSS do jogo, incluindo safe areas e ajustes responsivos. Este arquivo descreve o padrão; não substitui nem recalcula as regras CSS.",
+  "responsive": {
+    "landscape": "orientation:landscape and max-height:520px"
+  },
+  "controls": {
+    "joy": {
+      "label": "Joystick",
+      "anchor": "left-bottom",
+      "offsetX": 24,
+      "offsetY": 90,
+      "size": 124,
+      "visible": true,
+      "draggable": true,
+      "landscape": {
+        "offsetX": 20,
+        "offsetY": 36,
+        "size": 112,
+        "safeAreaX": true,
+        "safeAreaY": true
+      },
+      "safeAreaX": true,
+      "safeAreaY": true
+    },
+    "bJump": {
+      "label": "Pular",
+      "anchor": "right-bottom",
+      "offsetX": 18,
+      "offsetY": 84,
+      "size": 64,
+      "visible": true,
+      "draggable": true,
+      "landscape": {
+        "offsetX": 16,
+        "offsetY": 68,
+        "size": 56,
+        "safeAreaX": true,
+        "safeAreaY": true
+      },
+      "safeAreaX": false,
+      "safeAreaY": true
+    },
+    "bPunch": {
+      "label": "Socar",
+      "anchor": "right-bottom",
+      "offsetX": 94,
+      "offsetY": 84,
+      "size": 64,
+      "visible": true,
+      "draggable": true,
+      "landscape": {
+        "offsetX": 82,
+        "offsetY": 68,
+        "size": 56,
+        "safeAreaX": true,
+        "safeAreaY": true
+      },
+      "safeAreaX": false,
+      "safeAreaY": true
+    },
+    "bDash": {
+      "label": "Dash",
+      "anchor": "right-bottom",
+      "offsetX": 94,
+      "offsetY": 12,
+      "size": 64,
+      "visible": true,
+      "draggable": true,
+      "landscape": {
+        "offsetX": 82,
+        "offsetY": 8,
+        "size": 56,
+        "safeAreaX": true,
+        "safeAreaY": true
+      },
+      "safeAreaX": false,
+      "safeAreaY": true
+    },
+    "bInv": {
+      "label": "Inventário",
+      "anchor": "right-bottom",
+      "offsetX": 18,
+      "offsetY": 158,
+      "size": 64,
+      "visible": true,
+      "draggable": true,
+      "landscape": {
+        "offsetX": 16,
+        "offsetY": 128,
+        "size": 56,
+        "safeAreaX": true,
+        "safeAreaY": true
+      },
+      "safeAreaX": false,
+      "safeAreaY": true
+    },
+    "bSprint": {
+      "label": "Sprint",
+      "anchor": "right-bottom",
+      "offsetX": 18,
+      "offsetY": 12,
+      "size": 64,
+      "visible": true,
+      "draggable": true,
+      "landscape": {
+        "offsetX": 16,
+        "offsetY": 8,
+        "size": 56,
+        "safeAreaX": true,
+        "safeAreaY": true
+      },
+      "safeAreaX": false,
+      "safeAreaY": true
+    },
+    "bPause": {
+      "label": "Pausa",
+      "anchor": "right-top",
+      "offsetX": 12,
+      "offsetY": 10,
+      "size": 44,
+      "visible": true,
+      "draggable": true,
+      "landscape": {
+        "offsetX": 12,
+        "offsetY": 10,
+        "size": 44,
+        "safeAreaX": true,
+        "safeAreaY": true
+      },
+      "safeAreaX": false,
+      "safeAreaY": true
+    },
+    "collect": {
+      "label": "Coletar",
+      "anchor": "dynamic",
+      "offsetX": null,
+      "offsetY": null,
+      "size": 52,
+      "visible": true,
+      "draggable": false,
+      "dynamic": true
+    }
+  }
+}
