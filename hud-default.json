@@ -1,0 +1,9 @@
+{
+  "schema": "owm-hud-layout",
+  "version": 3,
+  "description": "Layout padrão do HUD: nenhum botão personalizado. Posições, tamanhos e opacidades vêm do CSS do jogo (safe areas e ajustes de paisagem incluídos). Importar este arquivo no editor restaura o padrão. Para personalizar, cada controle (joy, bJump, bPunch, bDash, bInv, bSprint, bPause, collect) aceita em profiles.<portrait|landscape>.controls: pos {ax:'l'|'r', ay:'t'|'b', ox, oy} (âncora + distância em px), size (px), opacity (0.15–1) e visible (false para ocultar).",
+  "profiles": {
+    "portrait": { "controls": {} },
+    "landscape": { "controls": {} }
+  }
+}
