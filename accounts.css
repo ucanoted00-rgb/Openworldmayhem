@@ -1,0 +1,22 @@
+/* Contas e amigos — complementa style.css */
+.acc-msg{min-height:20px;font-size:13px}
+.acc-msg.bad{color:#ff6b78}
+.acc-who{min-height:0;color:#c9ccd8;font-weight:700}
+.acc-list{height:min(340px,44vh)}
+.acc-h{margin:6px 2px 2px;color:#9aa0b4;font:800 12px var(--f);letter-spacing:.12em;text-transform:uppercase}
+.acc-h:first-child{margin-top:0}
+.acc-empty{padding:14px 8px;color:#9aa0b4;font-size:13px;text-align:center}
+.acc-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:#ffffff08}
+.acc-t{flex:1;min-width:0}
+.acc-t p{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;line-height:1.25}
+.acc-t p+p{color:#9aa0b4;font-size:12px}
+.acc-a{display:flex;gap:6px;flex:none}
+.acc-dot{flex:none;width:10px;height:10px;border-radius:50%;background:#555a6a;box-shadow:0 0 0 2px #0006}
+.acc-dot.on{background:var(--ok);box-shadow:0 0 8px #4caf50aa,0 0 0 2px #0006}
+.acc-row .btn.mini{width:auto;height:36px;padding:0 12px;font-size:13px;box-shadow:0 3px 0 #000a}
+.acc-row .btn.mini.ok{background:linear-gradient(#3f9a43,#2e7d32);border-color:#4caf50}
+.acc-row .btn.mini.warn:hover:not(:disabled){border-color:var(--ac)}
+@media (max-height:520px){
+  .screen[data-scr=acct],.screen[data-scr=friends]{justify-content:flex-start}
+  .acc-list{height:min(200px,38vh)}
+}
