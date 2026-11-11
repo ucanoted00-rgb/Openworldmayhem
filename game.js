@@ -997,8 +997,7 @@ const fishActors=new Map(),fishMeatMeshes=new Map(),fishMeatRay=new THREE.Raycas
 const FISH_MEAT_GEO=new THREE.DodecahedronGeometry(.19,0);
 const FISH_MEAT_MAT=new THREE.MeshStandardMaterial({color:0xf1796c,roughness:.92,metalness:0});
 const FISH_BONE_GEO=new THREE.CylinderGeometry(.018,.018,.19,5);
-const FISH_BONE_MAT=new THREE.MeshStandardMaterial({color:0xffe8ce,roughness:.9});
-const fishStateKey=(cx,cz)=>'pf'+cx+','+cz;
+const FISH_BONE_MAT=new THREE.MeshStandardMaterial({color:0xffe8ce,roughness:.9});const fishStateKey=(cx,cz)=>'pf'+cx+','+cz;
 const fishMeatKey=(cx,cz)=>'pm'+cx+','+cz;
 function fishWasCaught(cx,cz,id){const a=world.edits[fishStateKey(cx,cz)];return !!(a&&a[id])}
 function findFishMeatDrop(cx,cz,id){const a=world.edits[fishMeatKey(cx,cz)];return Array.isArray(a)?a.find(d=>String(d.id)===String(id)):null}
@@ -1368,29 +1367,28 @@ function applyAll(){
  }
 }
 let setBack='title';
-const SS=mkScreen('settings','Configurações'),sg=E('div','grid',null,SS);
-function slider(label,key,min,max){const d=E('div','btn sl',null,sg),i=E('i','',null,d),sp=E('span','',null,d),inp=E('input','',null,d);d.style.textAlign='center';inp.type='range';inp.min=min;inp.max=max;inp.value=S[key];const upd=()=>{sp.textContent=label+': '+S[key];d.style.setProperty('--p',(S[key]-min)/(max-min))};upd();inp.oninput=()=>{S[key]=+inp.value;upd();st('bc.s',S);applyAll()}}
-function cycle(label,key,names){const b=B('',()=>{S[key]=(S[key]+1)%names.length;upd();st('bc.s',S);applyAll()},sg),upd=()=>b.textContent=label+': '+names[S[key]];upd()}
+const SS=mkScreen('settings','Configurações'),sg=E('div','grid settings-grid',null,SS),vg=E('div','grid visual-grid hidden',null,SS);
+function slider(label,key,min,max,parent=sg){const d=E('div','btn sl',null,parent),i=E('i','',null,d),sp=E('span','',null,d),inp=E('input','',null,d);d.style.textAlign='center';inp.type='range';inp.min=min;inp.max=max;inp.value=S[key];const upd=()=>{sp.textContent=label+': '+S[key];d.style.setProperty('--p',(S[key]-min)/(max-min))};upd();inp.oninput=()=>{S[key]=+inp.value;upd();st('bc.s',S);applyAll()}}
+function cycle(label,key,names,parent=sg){const b=B('',()=>{S[key]=(S[key]+1)%names.length;upd();st('bc.s',S);applyAll()},parent),upd=()=>b.textContent=label+': '+names[S[key]];upd()}
 const OF=['Não','Sim'];
-slider('Campo de visão','fov',50,110);slider('Distância (chunks)','dist',2,10);slider('Sensibilidade','sens',20,200);slider('Brilho','bright',0,100);slider('Volume da música','mvol',0,100);
-cycle('Sombras','shadow',['Desligadas','Médias','Altas']);
-cycle('Tone mapping','tone',['Nenhum','Linear','Reinhard','Cineon','ACES']);
-cycle('Texturas HD','hdTex',OF);
-cycle('Ondas nos rios','wRiver',['Desligadas','Ligadas']);cycle('Correnteza dos rios','wFlow',['Desligada','Ligada']);cycle('Fluido 2D (ondas empurradas)','wFluid',['Desligado','Ligado']);
-cycle('Qualidade do personagem','charQ',['Baixa (2 mil tris)','Média (9 mil)','Alta (35 mil)']);cycle('Física da roupa','cloth',['Desligada','Ligada']);
-cycle('Bloom','bloom',OF);cycle('Névoa volumétrica','vfog',['Desligada','Normal','Alta']);cycle('Tempestade de areia','sand',['Desligada','Ligada']);cycle('Fundo da tela inicial','titleBg',['Panorama','Tempestade de areia']);
-cycle('Resolução','rq',['Baixa (480p)','550p','640p','Padrão (740p)','Alta (1080p)','Automática (pelo aparelho)']);cycle('Detalhe das árvores','tq',['Alto','Médio','Leve']);cycle('Detalhe das cerejeiras','chq',['Alto','Médio','Leve']);cycle('Resolução dinâmica','dyn',OF);cycle('Taxa de quadros alvo','hz',['Automática','60 Hz','90 Hz','120 Hz']);cycle('Suavização de bordas (FXAA)','aa',OF);cycle('Texto "Coletar"','collect',['Invisível','Visível']);cycle('Mostrar FPS','fps',OF);cycle('Inverter eixo Y','invert',OF);cycle('Balanço da câmera','bob',OF);cycle('Vinheta','vig',OF);
-cycle('Câmera','camMode',['1ª pessoa','3ª pessoa']);cycle('Travar mouse (lock on)','lockMouse',OF);
-
+/* Configurações gerais: controles e áudio. */
+slider('Sensibilidade','sens',20,200);slider('Volume da música','mvol',0,100);
+cycle('Inverter eixo Y','invert',OF);cycle('Travar mouse (lock on)','lockMouse',OF);
+/* Visuais: qualquer opção que altera câmera, imagem, iluminação, renderização ou HUD. */
+slider('Campo de visão','fov',50,110,vg);slider('Distância (chunks)','dist',2,10,vg);slider('Brilho','bright',0,100,vg);
+cycle('Sombras','shadow',['Desligadas','Médias','Altas'],vg);
+cycle('Tone mapping','tone',['Nenhum','Linear','Reinhard','Cineon','ACES'],vg);
+cycle('Texturas HD','hdTex',OF,vg);
+cycle('Ondas nos rios','wRiver',['Desligadas','Ligadas'],vg);cycle('Correnteza dos rios','wFlow',['Desligada','Ligada'],vg);cycle('Fluido 2D (ondas empurradas)','wFluid',['Desligado','Ligado'],vg);
+cycle('Qualidade do personagem','charQ',['Baixa (2 mil tris)','Média (9 mil)','Alta (35 mil)'],vg);cycle('Física da roupa','cloth',['Desligada','Ligada'],vg);
+cycle('Bloom','bloom',OF,vg);cycle('Névoa volumétrica','vfog',['Desligada','Normal','Alta'],vg);cycle('Tempestade de areia','sand',['Desligada','Ligada'],vg);cycle('Fundo da tela inicial','titleBg',['Panorama','Tempestade de areia'],vg);
+cycle('Resolução','rq',['Baixa (480p)','550p','640p','Padrão (740p)','Alta (1080p)','Automática (pelo aparelho)'],vg);cycle('Detalhe das árvores','tq',['Alto','Médio','Leve'],vg);cycle('Detalhe das cerejeiras','chq',['Alto','Médio','Leve'],vg);cycle('Resolução dinâmica','dyn',OF,vg);cycle('Taxa de quadros alvo','hz',['Automática','60 Hz','90 Hz','120 Hz'],vg);cycle('Suavização de bordas (FXAA)','aa',OF,vg);cycle('Texto "Coletar"','collect',['Invisível','Visível'],vg);cycle('Mostrar FPS','fps',OF,vg);cycle('Balanço da câmera','bob',OF,vg);cycle('Vinheta','vig',OF,vg);cycle('Câmera','camMode',['1ª pessoa','3ª pessoa'],vg);
 E('div','dsc np','Chill Synthwave - Digital Sunset — Karl Casey @ White Bat Audio',SS);
 const srow=E('div','srow',null,SS);
-B('Animações',()=>{updateCatTabs();renderAnims();go('anims')},srow);
-let animStudioPrev='menu';
-B('Estúdio de animação',()=>{animStudioPrev=state;state='animstudio';OWM.animstudio.open()},srow);
-OWM.animstudio.onClose=()=>{state=animStudioPrev;go('settings')};
 B('Restaurar padrão',()=>{Object.assign(S,DEF);st('bc.s',S);applyAll();location.reload()},srow);
-B('Voltar',()=>go(setBack),srow);
-const openSettings=b=>{setBack=b;go('settings')};
+let animStudioPrev='menu',animEditorFromHub=false,animStudioFromHub=false;
+OWM.animstudio.onClose=()=>{state=animStudioPrev;if(animStudioFromHub){mainHub.classList.remove('hidden');OWM.showMainHubScreen('anims')}else go(setBack||'settings');animStudioFromHub=false};
+const openSettings=b=>{setBack=b||'title';OWM.openMainHub('settings',setBack)};
 
 /* ---------- Mundos ---------- */
 let WL=ld('bc.w2',[]),selW=null;
@@ -1399,7 +1397,7 @@ const TS=mkScreen('title',null,'title');
 E('div','blob blob-1',null,TS);E('div','blob blob-2',null,TS);E('div','blob blob-3',null,TS);
 const lw=E('div','lw',null,TS),lg=E('div','logo-image-wrap',null,lw),logoImg=E('img','title-logo-img',null,lg);logoImg.src='title-logo.png';logoImg.alt='OPEN WORLD MAYHEM';logoImg.draggable=false;
 E('div','ed','EDIÇÃO BLOCOS',lw);E('div','splash',SPL[Math.random()*SPL.length|0],lw);
-B('Jogar',()=>{selW=null;renderWL();go('worlds')},TS);B('Tokens',()=>OWM.tokensOpen(),TS);B('Configurações',()=>openSettings('title'),TS);E('div','dsc np','The Show Must Go On — Toilet Takeover OST',TS);
+B('Jogar',()=>{selW=null;renderWL();go('worlds')},TS);B('Mais',()=>OWM.openMainHub('friends','title'),TS).classList.add('title-more-btn');E('div','dsc np','The Show Must Go On — Toilet Takeover OST',TS);
 const ft=E('div','foot',null,TS);E('span','','Open World Mayhem',ft);E('span','',touch?'Toque para jogar':'WASD • Espaço • F1-F4',ft);
 
 const WS=mkScreen('worlds','Mundos'),wlist=E('div','list',null,WS),wrow=E('div','row',null,WS);
@@ -1409,7 +1407,7 @@ B('Mundos multiplayer',()=>{updateMPUI();go('multiplayer')},WS);
 B('Voltar',()=>go('title'),WS);
 const MPS=mkScreen('multiplayer','Mundos multiplayer'),mpCode=fld('Código do anfitrião (ex.: NOME-ABCD)',MPS),mpMyCode=E('div','dsc','Entre na sua conta para obter seu código.',MPS),mpStatus=E('div','dsc','Sessão não iniciada.',MPS);
 function updateMPUI(){const a=OWM.account;mpMyCode.textContent=a&&a.loggedIn?'Seu código: '+(a.peerId||'conectando…'):'Entre na sua conta para hospedar ou entrar em um mundo.';mpStatus.textContent=OWM.multiplayer?OWM.multiplayer.statusText:'Sistema multiplayer carregando…'}
-B('Abrir conta / amigos',()=>{if(OWM.account)OWM.account.open()},MPS);
+B('Abrir conta / amigos',()=>{if(OWM.account)OWM.openMainHub('friends','multiplayer')},MPS);
 B('Copiar meu código',()=>{const code=OWM.account&&OWM.account.peerId;if(!code){toast('Crie ou entre em uma conta primeiro.');return}if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code).then(()=>toast('Código copiado!')).catch(()=>toast('Código: '+code));else toast('Código: '+code)},MPS);
 B('Hospedar mundo selecionado',()=>{const w=WL.find(x=>x.id===selW);if(!w){toast('Selecione um mundo na tela anterior.');return}if(!OWM.multiplayer){toast('Multiplayer ainda não carregou.');return}OWM.multiplayer.hostWorld(w).then(updateMPUI).catch(e=>{toast(e.message||'Não foi possível hospedar.');updateMPUI()})},MPS);
 B('Entrar no mundo pelo código',()=>{if(!OWM.multiplayer){toast('Multiplayer ainda não carregou.');return}OWM.multiplayer.join(mpCode.value).then(updateMPUI).catch(e=>{toast(e.message||'Não foi possível entrar.');updateMPUI()})},MPS);
@@ -1550,13 +1548,44 @@ const catBtns={};
 CATS.forEach(c=>{const b=B(c,()=>{curCat=c;updateCatTabs();renderAnims()},catTabs,'tab');catBtns[c]=b});
 function updateCatTabs(){Object.entries(catBtns).forEach(([k,b])=>b.classList.toggle('on',k===curCat))}
 const aList=E('div','list',null,AS),aRow=E('div','row',null,AS);
-const aPlay=B('Tocar',()=>{if(selAnim<0)return;const anims=ld('bc.anims',[]),a=anims[selAnim];if(!a)return;playingAnim=a;animTime=0;state='play';go('');lock();},aRow);
+const aPlay=B('Tocar',()=>{if(selAnim<0)return;const anims=ld('bc.anims',[]),a=anims[selAnim];if(!a)return;if(OWM.isMainHubOpen&&OWM.isMainHubOpen())OWM.closeMainHub();playingAnim=a;animTime=0;state='play';go('');lock();},aRow);
 const aEdit=B('Editar',()=>{if(selAnim>=0)openAnimEditor(selAnim,curCat)},aRow);
 const aDel=B('Apagar',()=>{if(selAnim<0)return;const a=ld('bc.anims',[]);a.splice(selAnim,1);st('bc.anims',a);selAnim=-1;renderAnims()},aRow);
-B('Nova animação',()=>openAnimEditor(-1,curCat),AS);B('Voltar',()=>go('settings'),AS);
+B('Nova animação',()=>openAnimEditor(-1,curCat),AS);
 function renderAnims(){aList.textContent='';const anims=ld('bc.anims',[]);const filtered=anims.map((a,i)=>({a,i})).filter(x=>x.a.category===curCat);if(!filtered.length)E('div','dsc','Nenhuma animação em "'+curCat+'"',aList);filtered.forEach(({a,i})=>{const d=E('div','w'+(i===selAnim?' on':''),null,aList),t=E('div','',null,d);E('p','',a.name,t);E('p','','Duração: '+a.duration.toFixed(1)+'s',t);d.onclick=()=>{selAnim=i;renderAnims()}});aPlay.disabled=aEdit.disabled=aDel.disabled=selAnim<0}
-function openAnimEditor(index,cat){state='animedit';OWM.animedit.open(index,cat)}
-OWM.animedit.onClose=(savedCat)=>{if(savedCat){curCat=savedCat;updateCatTabs()}state='pause';go('anims');renderAnims();anim.reloadIdle()};
+function openAnimEditor(index,cat){animEditorFromHub=!!(OWM.isMainHubOpen&&OWM.isMainHubOpen());if(animEditorFromHub)mainHub.classList.add('hidden');state='animedit';OWM.animedit.open(index,cat)}
+
+/* ---------- Menu principal em tela cheia ---------- */
+const mainHub=E('div','main-hub hidden',null,document.body);
+const mainHubNav=E('nav','main-hub-nav',null,mainHub);mainHubNav.setAttribute('aria-label','Menu principal');
+const mainHubContent=E('main','main-hub-content',null,mainHub);
+const mainHubClose=E('button','main-hub-close','×',mainHub);mainHubClose.type='button';mainHubClose.setAttribute('aria-label','Fechar menu');
+let mainHubReturn='title',mainHubCurrent='friends';
+const hubSections=[
+ {id:'friends',label:'Amigos',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
+ {id:'minigames',label:'Minigame',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h4m-2-2v4m8-3h.01M18 13h.01M7 6h10a4 4 0 0 1 3.9 3.1l1 4.2a3 3 0 0 1-4.8 3L14 14H10l-3.1 2.3a3 3 0 0 1-4.8-3l1-4.2A4 4 0 0 1 7 6Z"/></svg>'},
+ {id:'settings',label:'Configurações',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.6-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.6 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2Z" transform="translate(-1 -1)"/></svg>'},
+ {id:'visuals',label:'Visuais',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>'},
+ {id:'animations',label:'Animações',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 3v4m8-4v4M4 9h16M9 13l-1 3m7-3 1 3m-7-3 1 3"/><path d="m11 12 2 2-2 2"/></svg>'}
+];
+const hubNavButtons={};
+function attachMainHubScreen(id){const el=OWM.screens&&OWM.screens[id];if(el&&el.parentElement!==mainHubContent){mainHubContent.appendChild(el);el.classList.add('hub-embedded-screen')}return el||null}
+function setHubActive(id){Object.entries(hubNavButtons).forEach(([key,b])=>b.classList.toggle('on',key===id));mainHubCurrent=id}
+function showMainHubScreen(id){attachMainHubScreen(id);go(id);}
+function showMainHubSection(id){setHubActive(id);
+ if(id==='settings'||id==='visuals'){attachMainHubScreen('settings');SS.querySelector('h2').textContent=id==='visuals'?'Visuais':'Configurações';sg.classList.toggle('hidden',id==='visuals');vg.classList.toggle('hidden',id!=='visuals');showMainHubScreen('settings');return}
+ if(id==='animations'){updateCatTabs();renderAnims();showMainHubScreen('anims');return}
+ if(id==='friends'){if(OWM.account&&OWM.account.open)OWM.account.open();else{attachMainHubScreen('friends');showMainHubScreen('friends')}return}
+ if(id==='minigames'){if(OWM.tokensOpen)OWM.tokensOpen();else{attachMainHubScreen('tokens');showMainHubScreen('tokens')}return}
+}
+function openMainHub(section='friends',returnScreen){mainHubReturn=returnScreen||(state==='pause'?'pause':'title');mainHub.classList.remove('hidden');showMainHubSection(section)}
+function closeMainHub(){mainHub.classList.add('hidden');go(mainHubReturn||'title')}
+for(const item of hubSections){const b=E('button','main-hub-item',null,mainHubNav);b.type='button';b.title=item.label;b.setAttribute('aria-label',item.label);b.innerHTML=item.svg+`<span>${item.label}</span>`;b.onclick=()=>showMainHubSection(item.id);hubNavButtons[item.id]=b}
+mainHubClose.onclick=closeMainHub;
+attachMainHubScreen('settings');attachMainHubScreen('anims');attachMainHubScreen('tokens');
+OWM.attachMainHubScreen=attachMainHubScreen;OWM.isMainHubOpen=()=>!mainHub.classList.contains('hidden');OWM.showMainHubScreen=showMainHubScreen;OWM.showMainHubSection=showMainHubSection;OWM.openMainHub=openMainHub;OWM.closeMainHub=closeMainHub;
+OWM.animedit.onClose=(savedCat)=>{if(savedCat){curCat=savedCat;updateCatTabs()}state='menu';if(animEditorFromHub){mainHub.classList.remove('hidden');OWM.showMainHubScreen('anims')}else go('anims');animEditorFromHub=false;renderAnims();anim.reloadIdle()};
+B('Estúdio de animação',()=>{animStudioPrev=state;animStudioFromHub=!!(OWM.isMainHubOpen&&OWM.isMainHubOpen());if(animStudioFromHub)mainHub.classList.add('hidden');state='animstudio';OWM.animstudio.open()},AS);
 
 
 /* ---------- Inventário, fabricação, armas e coleta ---------- */
@@ -1967,8 +1996,7 @@ function syncLeafDrops(){
    if(!m){m=new THREE.Mesh(LEAF_DROP_GEO,LEAF_DROP_MAT);m.rotation.x=-Math.PI/2+.07;m.rotation.y=Number(d.r)||0;m.renderOrder=2;m.userData.leafPickup={id:d.id,cx,cz};scene.add(m);leafDropMeshes.set(id,m)}
    m.position.set(d.x,groundH(d.x,d.z)+.035,d.z);
   }
- }
- for(const[id,m]of leafDropMeshes)if(!keep.has(id)){scene.remove(m);leafDropMeshes.delete(id)}
+ } for(const[id,m]of leafDropMeshes)if(!keep.has(id)){scene.remove(m);leafDropMeshes.delete(id)}
 }
 function updateLeafDrops(dt){leafSyncT-=dt;if(leafSyncT<=0){leafSyncT=.45;syncLeafDrops()}}
 function leafCollectTarget(d,cx,cz){return{k:'leaf',id:d.id,cx,cz,x:d.x,z:d.z,y0:groundH(d.x,d.z),hy:.04,hx:.41,hz:.22}}
