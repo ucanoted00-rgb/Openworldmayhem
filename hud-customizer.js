@@ -11,7 +11,7 @@ const O=window.OWM;
 if(!O||!O.screens||!O.screens.settings||!O.screens.pause)return;
 const {E,B,go,ld,st,toast,$}=O;
 const KEY='bc.hud.layout.v3',V2='bc.hud.layout.v2',V1='bc.hud.layout.v1';
-const IDS=['joy','bJump','bPunch','bM1','bM2','bDash','bInv','bSprint','bPause','collect'];
+const IDS=['joy','bJump','bPunch','bM1','bM2','bDash','bShiftLock','bInv','bSprint','bPause','collect'];
 const SEL={};IDS.forEach(id=>SEL[id]='#'+id);
 const META={
  joy:{label:'Joystick',min:80,max:200,drag:true,round:true},
@@ -20,6 +20,7 @@ const META={
  bM1:{label:'M1 (6 dano)',min:40,max:112,drag:true},
  bM2:{label:'M2 (8 dano)',min:40,max:112,drag:true},
  bDash:{label:'Dash',min:40,max:112,drag:true},
+ bShiftLock:{label:'Shift Lock',min:38,max:88,drag:true},
  bInv:{label:'Inventário',min:40,max:112,drag:true},
  bSprint:{label:'Sprint',min:40,max:112,drag:true},
  bPause:{label:'Pausa',min:32,max:88,drag:true},
@@ -124,7 +125,7 @@ function sanitize(raw){
 function migrateOld(raw){
  const src=raw&&raw.controls;
  if(!src||raw.mode==='original'||raw.coordinateSystem==='css-anchor-offsets')return null;
- const bad={joy:[24,81,124],bJump:[86,86,64],bPunch:[65,86,64],bM1:[0,0,64],bM2:[0,0,64],bDash:[65,94,64],bInv:[86,76,64],bSprint:[86,94,64],bPause:[91,4,44],collect:[50,60,52]};
+ const bad={joy:[24,81,124],bJump:[86,86,64],bPunch:[65,86,64],bM1:[0,0,64],bM2:[0,0,64],bDash:[65,94,64],bShiftLock:[44,94,64],bInv:[86,76,64],bSprint:[86,94,64],bPause:[91,4,44],collect:[50,60,52]};
  const flagged=IDS.some(id=>src[id]&&['customPosition','customSize','customVisibility'].some(k=>typeof src[id][k]==='boolean'));
  const out=emptyCfg(),ctl=out.profiles[ORI()].controls,d=defaults();
  for(const id of IDS){
