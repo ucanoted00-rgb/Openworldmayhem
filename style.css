@@ -490,6 +490,7 @@ i.it.knife{width:18%;height:84%;background:linear-gradient(#cfd3da 62%,#2c2e35 6
  #bJump{right:calc(env(safe-area-inset-right,0px) + 16px);bottom:calc(env(safe-area-inset-bottom,0px) + 68px)}
  #bPunch{right:calc(env(safe-area-inset-right,0px) + 82px);bottom:calc(env(safe-area-inset-bottom,0px) + 68px)}
  #bM1{right:calc(env(safe-area-inset-right,0px) + 148px);bottom:calc(env(safe-area-inset-bottom,0px) + 68px)}
+ #bShiftLock{right:calc(env(safe-area-inset-right,0px) + 148px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
  #bM2{right:calc(env(safe-area-inset-right,0px) + 148px);bottom:calc(env(safe-area-inset-bottom,0px) + 134px)}
  .cmb-k{font-size:15px}
  #combo-ui{top:24%;font-size:16px}#combo-ui.fin{font-size:20px}
