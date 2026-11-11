@@ -25,13 +25,14 @@ function counter(parent,cls){const d=E('div','tk-count '+(cls||''),null,parent);
 
 /* ---------- menu de minigames: lista à esquerda, prévia animada + detalhes à direita ---------- */
 const TS=mkScreen('tokens',null,'title tokens');
+OWM.attachMainHubScreen&&OWM.attachMainHubScreen('tokens');
 counter(TS,'tk-corner');
 E('h2','tk-title','Tokens',TS);
 const wrap=E('div','tk-wrap',null,TS),list=E('div','tk-list',null,wrap),side=E('div','tk-side',null,wrap);
 const pvBox=E('div','tk-pv',null,side),pv=E('canvas','',null,pvBox);pv.width=480;pv.height=270;
 const sName=E('h3','tk-sname',null,side),sRw=E('div','tk-rw',null,side),sDesc=E('p','tk-sdesc',null,side),sActsT=E('div','tk-acts-t','Atos',side),sActs=E('div','tk-acts',null,side),sBest=E('p','tk-best',null,side);
 const selAct={},sPlay=B('Jogar',()=>{const g=GAMES.find(x=>x.id===sel);g&&g.play(selAct[g.id]||1)},side,'tk-play');   // o botão de jogar fica no fim (embaixo) do painel
-B('← Voltar',()=>go('title'),TS).classList.add('tk-back');
+
 /* prévia: cada minigame desenha a sua em 2D (sem criar outro contexto WebGL) */
 const pvRnd=(()=>{let a=7;return()=>{a=(a*16807)%2147483647;return a/2147483647}})();
 const PV_TREES=Array.from({length:22},()=>({x:pvRnd(),h:.18+pvRnd()*.3,w:.05+pvRnd()*.05,l:pvRnd()}));
@@ -89,7 +90,7 @@ function pvLoop(now){
  pvRaf=requestAnimationFrame(pvLoop);
  const g=GAMES.find(x=>x.id===sel)||GAMES[0],c=pv.getContext('2d');c.setTransform(1,0,0,1,0,0);g.draw(c,pv.width,pv.height,now/1000);
 }
-OWM.tokensOpen=()=>{refreshMenu();go('tokens');if(!pvRaf)pvRaf=requestAnimationFrame(pvLoop)};
+OWM.tokensOpen=()=>{refreshMenu();if(OWM.isMainHubOpen&&OWM.isMainHubOpen())OWM.showMainHubScreen('tokens');else if(OWM.openMainHub)OWM.openMainHub('minigames');else go('tokens');if(!pvRaf)pvRaf=requestAnimationFrame(pvLoop)};
 
 /* ---------- minigame 1: achar os tokens ---------- */
 const MS=mkScreen('mg-find',null,'mg');
@@ -115,7 +116,7 @@ const mulberry=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+M
 function glowTex(a,b){a=a||'255,230,120';b=b||'255,190,40';const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,'rgba('+a+',1)');r.addColorStop(.35,'rgba('+b+',.45)');r.addColorStop(1,'rgba('+b+',0)');g.fillStyle=r;g.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)}
 
 /* ---------- floresta PS1 (mesmos modelos e mesmo chão da floresta do jogo) ----------
-   Árvores e arbustos vêm do pack OWM.ps1Pack (ps1trees.js): tronco com casca + copa de cartões recortados. Decodificação igual à do game.js;
+   Árvores e arbustos vêm do pack OWM.ps1Pack (bioflorest.js): tronco com casca + copa de cartões recortados. Decodificação igual à do game.js;
    tudo é fundido em 2 malhas (casca e cartões). O chão usa as cores de grama da floresta (verde escuro com manchas + terra) e a textura de tufos. */
 const unb64=(s,T)=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new T(u.buffer)};
 const f32=(a,k)=>{const o=new Float32Array(a.length);for(let i=0;i<a.length;i++)o[i]=a[i]*k;return o};
@@ -359,7 +360,7 @@ function startFind(){
  if(G)stopFind(true);hQ.classList.remove('on','good','miss','win');hPr.classList.remove('on');hDrive.classList.remove('on');hDriveLabel.classList.remove('on');hSh.classList.remove('on');hSh.textContent='';hIntro.classList.remove('on','fade');
  const seed=(Math.random()*1e9)|0,yaw0=Math.random()*6.283,W=build(seed,yaw0);
  G={...W,yaw:yaw0,wcount:0,wgot:0,q:null,pitch:0,x:0,z:0,y:W.H(0,0)+1.65,vy:0,t:0,found:0,state:'ready',bob:0,pingT:0,pingBuf:null,ac:null,seed,msgT:0,flash:0,touches:new Map(),tension:0,tkT:0,mus:null,tcT:0,glT:-1,jn:0,jx:0,jy:0,jz:0,drive:{ready:false,active:false,speed:0,heading:W.car?W.car.heading:yaw0,camYaw:W.car?W.car.heading:yaw0,camPitch:.36,camDistance:10.7,touch:{}},smWheelT:38+Math.random()*18};
- mistInit(G);OWM.miniState&&OWM.miniState(true);go('mg-find');resize();updHud();showIntro();
+ if(OWM.isMainHubOpen&&OWM.isMainHubOpen())OWM.closeMainHub();mistInit(G);OWM.miniState&&OWM.miniState(true);go('mg-find');resize();updHud();showIntro();
  hMsg.textContent='';
 }
 function showIntro(){
@@ -996,8 +997,7 @@ const SM={
  FAR:[16,32],        // distância quando aparece longe
  LIFE_NEAR:[8,18],   // quanto tempo fica, se ninguém olhar, quando apareceu perto
  LIFE_FAR:[16,36],   // idem, quando apareceu longe
- LOOK:.14,           // "olhar diretamente": ângulo máximo entre a mira e ele (~8°)
- MAXD:70,            // distância máxima em que o olhar conta
+ LOOK:.14,           // "olhar diretamente": ângulo máximo entre a mira e ele (~8°) MAXD:70,            // distância máxima em que o olhar conta
  STARE:[.9,2.8],     // quanto tempo ele encara antes de sumir
  P_INSTANT:.3,       // chance de sumir NA HORA em que o jogador olha para ele
  FADE_IN:.4,FADE_OUT:.45,
