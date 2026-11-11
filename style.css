@@ -1153,3 +1153,57 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
   calc(var(--ui-pixel-strength,0)*.7px) 0 0 currentColor,
   0 calc(var(--ui-pixel-strength,0)*.7px) 0 currentColor;
 }
+
+
+/* VHS ajustável: cromatismo e linhas analógicas somente em texto e botões. */
+.ui-vhs .btn,
+.ui-vhs .screen h1,
+.ui-vhs .screen h2,
+.ui-vhs .screen h3,
+.ui-vhs .screen p,
+.ui-vhs .screen label,
+.ui-vhs .screen .title,
+.ui-vhs .main-hub-item span,
+.ui-vhs #hud span,
+.ui-vhs #hud p{
+ text-shadow:
+  calc(var(--ui-vhs-strength,0)*2px) 0 rgba(255,45,75,calc(var(--ui-vhs-strength,0)*.9)),
+  calc(var(--ui-vhs-strength,0)*-2px) 0 rgba(30,220,255,calc(var(--ui-vhs-strength,0)*.9)),
+  0 0 calc(var(--ui-vhs-strength,0)*2px) currentColor;
+}
+.ui-vhs .btn{
+ background-image:
+  repeating-linear-gradient(180deg,rgba(0,0,0,calc(var(--ui-vhs-strength,0)*.2)) 0 1px,transparent 1px var(--ui-vhs-scan,2px)),
+  linear-gradient(180deg,#34394a 0%,#1b1f2a 100%);
+ background-blend-mode:multiply,normal;
+ border-color:rgba(150,205,220,calc(.35 + var(--ui-vhs-strength,0)*.5));
+ box-shadow:
+  calc(var(--ui-vhs-strength,0)*2px) 0 rgba(255,35,70,.3),
+  calc(var(--ui-vhs-strength,0)*-2px) 0 rgba(30,210,255,.3),
+  0 3px 0 #090c13,
+  inset 0 1px 0 rgba(255,255,255,.2);
+}
+.ui-vhs .btn:active:not(:disabled){
+ filter:contrast(calc(1 + var(--ui-vhs-strength,0)*.25));
+}
+@keyframes uiVhsFlicker{
+ 0%,96%,100%{opacity:1}
+ 97%{opacity:.88}
+ 98%{opacity:.96}
+}
+.ui-vhs .btn,
+.ui-vhs .screen h1,
+.ui-vhs .screen h2,
+.ui-vhs .screen h3,
+.ui-vhs .screen p,
+.ui-vhs .screen label,
+.ui-vhs .main-hub-item span,
+.ui-vhs #hud span,
+.ui-vhs #hud p{
+ animation:uiVhsFlicker 5s steps(1,end) infinite;
+}
+@media(prefers-reduced-motion:reduce){
+ .ui-vhs .btn,.ui-vhs .screen h1,.ui-vhs .screen h2,.ui-vhs .screen h3,
+ .ui-vhs .screen p,.ui-vhs .screen label,.ui-vhs .main-hub-item span,
+ .ui-vhs #hud span,.ui-vhs #hud p{animation:none}
+}
