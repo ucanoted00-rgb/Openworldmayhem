@@ -2736,9 +2736,9 @@ function debugForceCoil(){
  COIL.cd=0;COIL.debugForced=desertW(P.p.x,P.p.z)<COIL.DESERT_EXIT;s.cd=0;s.sees=true;s.lost=0;coilStart(s);toast('Debug: cobra enrolada — V alterna a câmera');return true
 }
 OWM.SPC=SPC;OWM.debugCoil=debugForceCoil;OWM.mobStatus=()=>({scorpionReady:!!SCF,snakeReady:!!SNF,active:scs.filter(s=>s.st!=='dead').length,desertWeight:desertW(P.p.x,P.p.z)});OWM.debugScorpion=()=>{if(state!=='play'){toast('Inicie um mundo antes do teste.');return false}if(!SCF){toast('Pack do escorpião não foi carregado. Verifique o console.');return false}const a=P.yaw,x=P.p.x+Math.sin(a)*3,z=P.p.z-Math.cos(a)*3;let s;try{s=scSpawn(x,z,'scorpion')}catch(e){console.error('[OWM] Falha no spawn manual do escorpião:',e)}if(!s){toast('Não foi possível criar o escorpião (ver console).');return false}toast('Escorpião de teste criado.');return true};
-function scHurt(s,amount){
+function scHurt(s,amount,force=3.4){
  if(s.st==='dead')return;const d=amount*(1-s.k.ARMOR);s.hp=Math.max(0,s.hp-d);s.flash=.18;
- const dx=s.x-P.p.x,dz=s.z-P.p.z,l=Math.hypot(dx,dz)||1;s.kx=dx/l*3.4;s.kz=dz/l*3.4;
+ const dx=s.x-P.p.x,dz=s.z-P.p.z,l=Math.hypot(dx,dz)||1;s.kx=dx/l*force;s.kz=dz/l*force;
  s.hb.visible=true;const r=s.hp/s.k.HP;s.fill.scale.x=Math.max(.001,r);s.fill.position.x=-(1-r)*.5;
  if(s.hp<=0){s.st='dead';s.dead=0;s.inst.play('idle',.1);return}
  if(s.st!=='attack'){s.st='chase';s.inst.play('run',.1)}s.sees=true;s.lost=0;
@@ -2903,18 +2903,24 @@ function unstuck(){if(!hits(P.p.x,P.p.y,P.p.z))return;for(let r=1;r<=8;r++)for(l
      M2 de abertura → estocada · M2 depois de M1 → machadada vertical · M2 depois de M2 → corte ascendente
      M2 como 4º golpe em diante = FINISHER (mais partículas e tremor de câmera; o combo reinicia)
    Com faca o dano cai no instante do corte da animação; sem arma, jab (M1) e cruzado (M2) com um pequeno atraso. */
-const CMB={n:0,prev:0,t:0,fist:null,ut:0};
+const CMB={n:0,prev:0,t:0,fist:null,ut:0,queue:null,hitStop:0};
 const CF_GEO=new THREE.BoxGeometry(.05,.05,.05),CF_GEO2=new THREE.BoxGeometry(.09,.09,.09);
 function comboArmed(){return !!(OWM.weapon.id&&WPS[OWM.weapon.id])}
-function comboPress(kind){
- if(state!=='play'||COIL.on||tablePlacement||!anim.combo)return;
+function comboPress(kind,fromBuffer=false){
+ if(state!=='play'||COIL.on||tablePlacement||!anim.combo)return false;
  const armed=comboArmed(),chain=CMB.t>0,step=chain?CMB.n+1:0,prev=chain?CMB.prev:0;
  const idx=kind===1?step%2:(step===0?2:(prev===1?3:4)),fin=kind===2&&step>=3;
- if(!anim.combo(kind,idx,armed,step))return;
- CMB.n=step;CMB.prev=kind;CMB.t=kind===1?.9:1.15;
- if(fin){CMB.n=0;CMB.prev=0;CMB.t=0}   // finisher fecha o combo
+ if(!anim.combo(kind,idx,armed,step)){
+  if(!fromBuffer&&CMB.t>0)CMB.queue={kind,t:.3};
+  return false;
+ }
+ CMB.queue=null;CMB.n=step;CMB.prev=kind;CMB.t=kind===1?.9:1.15;
+ if(fin){CMB.n=0;CMB.prev=0;CMB.t=0}
+ // Pequeno avanço na direção do golpe: M2 compromete um pouco mais que M1.
+ const fx=-Math.sin(P.yaw),fz=-Math.cos(P.yaw),lunge=kind===1?.72:1.08;
+ P.vel.x+=fx*lunge;P.vel.z+=fz*lunge;
  if(!armed)CMB.fist={kind,step,idx,t:(anim.studioHit&&anim.studioHit(kind===1?'m1':'m2'))||(kind===1?.15:.24)};
- comboUi(step+1,kind,fin);
+ comboUi(step+1,kind,fin);return true;
 }
 function comboUi(count,kind,fin){
  const el=$('#combo-ui');if(!el)return;
@@ -2961,15 +2967,17 @@ function spawnComboFx(pos,kind,idx,fin,landed){
 function comboHit(kind,step,idx){
  const fin=kind===2&&step>=3,dmg=(kind===1?6:8)*archetypeMul('punchDamage');
  const stg=scAim();let pos=null;
- if(stg){scHurt(stg.s,dmg);pos={x:stg.s.x,y:stg.s.y+.45,z:stg.s.z}}
+ if(stg){scHurt(stg.s,dmg,fin?7.2:(kind===2?5.2:3.8));pos={x:stg.s.x,y:stg.s.y+.45,z:stg.s.z}}
  else{const ft=rayFish(eye,fwd);if(ft&&ft.f){fishHurt(ft.f,dmg);const fp=ft.f.group.position;pos={x:fp.x,y:fp.y,z:fp.z}}}
  if(comboArmed()){slashFx(idx,kind,fin);spawnComboFx(pos,kind,idx,fin,!!pos)}   // faca: traço de corte + faíscas
  else if(pos){slashFx(idx,kind,fin,true);spawnImpactFx(pos,kind,fin)}            // punho: só impacto
+ if(pos)CMB.hitStop=Math.max(CMB.hitStop,fin?.078:(kind===2?.052:.032));
  addTrauma(pos?(kind===1?.14:.28)+(fin?.35:0):(fin?.2:.05));
 }
 function comboTick(dt){
- if(CMB.t>0){CMB.t-=dt;if(CMB.t<=0){CMB.n=0;CMB.prev=0}}
- if(COIL.on){CMB.fist=null;return}
+ if(CMB.t>0){CMB.t-=dt;if(CMB.t<=0){CMB.n=0;CMB.prev=0;CMB.queue=null}}
+ if(COIL.on){CMB.fist=null;CMB.queue=null;return}
+ if(CMB.queue){CMB.queue.t-=dt;if(CMB.queue.t<=0)CMB.queue=null;else{const q=CMB.queue;if(comboPress(q.kind,true))CMB.queue=null}}
  const si=anim.strikeInfo&&anim.strikeInfo();
  if(si)comboHit(si.kind,si.step,si.idx);
  if(CMB.fist){CMB.fist.t-=dt;if(CMB.fist.t<=0){const f=CMB.fist;CMB.fist=null;comboHit(f.kind,f.step,f.idx)}}
@@ -2987,7 +2995,7 @@ else if(breaking&&hit&&!hit.terr&&hit.y>0){const key=hit.x+','+hit.y+','+hit.z;i
 
 let last=performance.now();
 addEventListener('visibilitychange',()=>{last=performance.now()});
-function loop(now){requestAnimationFrame(loop);const raw=Math.max(0,now-last),realDt=document.hidden?0:raw/1000,dt=Math.min(.05,raw/1000);last=now;if(state!=='play'&&QTE.shown)qteVis(false);if(state!=='play'&&HT.fx>0){HT.fx=0;heatFx(0,false)}if(state==='play'){post.sample(raw);tick(dt,realDt)}else if(state==='menu'){ma+=dt*.08;if(menuSand(dt)){cam.position.set(0,40,0);cam.lookAt(0,40,-10);post.update(dt)}else{const h=hgt(0,0);cam.position.set(Math.cos(ma)*26,h+16,Math.sin(ma)*26);cam.lookAt(0,h-2,0);anim.update(dt,{inGame:false});post.setGround(h);post.update(dt);stream(0,0,4,2);}}else if(state==='pause'){stream(P.p.x>>4,P.p.z>>4,S.dist,1);post.update(dt)}if(state==='animstudio'){if(OWM.animstudio)OWM.animstudio.tick(dt)}else if(state==='animedit'){if(OWM.animedit)OWM.animedit.tick(dt)}else if(state==='creator'){if(OWM.creator)OWM.creator.tick(dt)}else if(state==='mini'){if(OWM.mini)OWM.mini.tick(dt)}else{post.render();}if(OWM.multiplayer)OWM.multiplayer.tick(dt);if(++fc>=30){const t=performance.now();const fp=fc*1000/(t-ft0);if(S.fps)$('#fps').textContent=Math.round(fp)+' FPS · '+post.info();fc=0;ft0=t}}
+function loop(now){requestAnimationFrame(loop);const raw=Math.max(0,now-last),realDt=document.hidden?0:raw/1000,dt=Math.min(.05,raw/1000);last=now;if(state!=='play'&&QTE.shown)qteVis(false);if(state!=='play'&&HT.fx>0){HT.fx=0;heatFx(0,false)}if(state==='play'){post.sample(raw);let simDt=dt;if(CMB.hitStop>0){CMB.hitStop=Math.max(0,CMB.hitStop-realDt);simDt*=.16}tick(simDt,realDt)}else if(state!=='play'&&CMB.hitStop>0)CMB.hitStop=0;else if(state==='menu'){ma+=dt*.08;if(menuSand(dt)){cam.position.set(0,40,0);cam.lookAt(0,40,-10);post.update(dt)}else{const h=hgt(0,0);cam.position.set(Math.cos(ma)*26,h+16,Math.sin(ma)*26);cam.lookAt(0,h-2,0);anim.update(dt,{inGame:false});post.setGround(h);post.update(dt);stream(0,0,4,2);}}else if(state==='pause'){stream(P.p.x>>4,P.p.z>>4,S.dist,1);post.update(dt)}if(state==='animstudio'){if(OWM.animstudio)OWM.animstudio.tick(dt)}else if(state==='animedit'){if(OWM.animedit)OWM.animedit.tick(dt)}else if(state==='creator'){if(OWM.creator)OWM.creator.tick(dt)}else if(state==='mini'){if(OWM.mini)OWM.mini.tick(dt)}else{post.render();}if(OWM.multiplayer)OWM.multiplayer.tick(dt);if(++fc>=30){const t=performance.now();const fp=fc*1000/(t-ft0);if(S.fps)$('#fps').textContent=Math.round(fp)+' FPS · '+post.info();fc=0;ft0=t}}
 addEventListener('beforeunload',saveWorld);
 applyAll();showMenu();requestAnimationFrame(loop);
 })();
