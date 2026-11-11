@@ -968,6 +968,38 @@ function hairStep(dt){
  HU.uHC.value.copy(_ha).sub(av.position).applyQuaternion(_hqi);
 }
 
+/* Camada de peso dos golpes: o tronco inicia a rotação, o quadril contrapõe e o braço livre protege o tórax.
+   É aditiva ao clipe base para manter os movimentos de locomoção; clipes do Estúdio continuam com prioridade. */
+const COMBAT_GUARD_Q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.72,0,.24));
+const COMBAT_GUARD_ELBOW_Q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.78,0,0));
+function combatBodyOverlay(){
+ if(!av.visible||(SO.cur&&SO.cur.clip))return;
+ let t=0,kind=1,idx=0,active=false;
+ if(K.t>=0){
+  active=true;t=clamp(K.t/Math.max(.01,K.dur),0,1);
+  kind=K.cur&&K.cur.kind||1;idx=K.cur&&K.cur.idx!=null?K.cur.idx:K.n;
+ }else if(U.pu>=0&&UA){
+  active=true;t=clamp(U.pu/Math.max(.01,UA.clips[PUN[U.pk]].dur),0,1);
+  kind=U.cat==='m2'?2:1;idx=U.fk;
+ }
+ if(!active)return;
+ const smooth=(a,b)=>sm((t-a)/Math.max(.001,b-a));
+ const prep=smooth(0,.17)*(1-smooth(.13,.31));
+ const drive=smooth(.11,.29)*(1-smooth(.34,.53));
+ const follow=smooth(.29,.49)*(1-smooth(.72,.94));
+ const heavy=kind===2?1:0;
+ const side=kind===2?(idx===4?-1:1):(idx===1||idx===3?-1:.32);
+ const turn=side*(.065*prep+(.12+.055*heavy)*drive+.045*follow);
+ const lean=.025*prep+(.105+.045*heavy)*drive+.035*follow;
+ upper.quaternion.multiply(_qa.setFromEuler(_ea.set(lean,turn,side*.018*drive)));
+ hip.quaternion.multiply(_qa.setFromEuler(_ea.set(0,-turn*.48,-side*.012*drive)));
+ B.RA.quaternion.multiply(_qa.setFromEuler(_ea.set(-.055*drive,side*.012*drive,0)));
+ B.RE.quaternion.multiply(_qa.setFromEuler(_ea.set(-.07*(prep+follow),0,0)));
+ const guardW=clamp((prep*.52+drive*.62+follow*.38)*(.82+.12*heavy),0,.62);
+ B.LA.quaternion.slerp(COMBAT_GUARD_Q,guardW);
+ B.LE.quaternion.slerp(COMBAT_GUARD_ELBOW_Q,guardW*.9);
+ B.hm.quaternion.multiply(_qa.setFromEuler(_ea.set(.018*drive,-turn*.22,0)));
+}
 function update(dt,s){
  if(!s||!s.inGame){av.visible=false;VM.g.visible=false;K.strike=false;return}
  const{p,vel,og,mining,swT,cp,custom,tp3,coil}=s;
@@ -1110,6 +1142,7 @@ function update(dt,s){
  studioUpdate(dt,s,og,vel,moving);
  knifeUpdate(dt,s,sp,A,rn,clipOn,custom);
  if(!custom)studioBones(!!tp3);
+ if(!custom&&tp3)combatBodyOverlay();
 
  /* Enrolado: braços se fecham protegendo o tórax, com tremor pequeno e suave. A transição usa ST.coil para não dar snap. */
  if(ST.coil>.001){
@@ -1188,14 +1221,20 @@ const K={w:0,t:-1,n:2,hit:false,strike:false,pend:false,dr:9,was:false,sp:0,rc:n
    mesmo formato das da faca (v de KSW). 0 = jab (reto), 1 = cruzado (vem de fora pro centro). Ritmo = o do clipe punch1/punch2 (U.pu). */
 const F1={w:0,hold:0},GUARD=[.21,-.22,-.44,0,0,0];
 const FSW=[
- [[0,.21,-.22,-.44,0,0,0],[.25,.19,-.19,-.3,.3,0,0],[.45,.1,-.08,-.66,-.4,.05,.05],[.62,.12,-.1,-.62,-.35,.05,.05],[1,.21,-.22,-.44,0,0,0]],
- [[0,.21,-.22,-.44,0,0,0],[.25,.3,-.2,-.36,.2,0,-.6],[.45,0,-.12,-.64,-.5,0,.5],[.62,-.04,-.14,-.6,-.45,0,.55],[1,.21,-.22,-.44,0,0,0]],
- /* 2 (M1a) direto rápido · 3 (M1b) gancho de cima pra baixo · 4 (M2 abertura) soco forte com recuo · 5 (M2 após M1) overhand · 6 (M2 após M2) uppercut */
- [[0,.21,-.22,-.44,0,0,0],[.2,.24,-.2,-.34,.25,0,.15],[.42,.02,-.14,-.68,-.45,.05,.1],[.6,0,-.15,-.64,-.4,.05,.1],[1,.21,-.22,-.44,0,0,0]],
- [[0,.21,-.22,-.44,0,0,0],[.25,.38,-.1,-.32,.1,0,-.8],[.45,-.06,-.3,-.62,-.5,0,.7],[.62,-.1,-.32,-.58,-.45,0,.75],[1,.21,-.22,-.44,0,0,0]],
- [[0,.21,-.22,-.44,0,0,0],[.3,.28,-.3,-.2,.5,0,.1],[.5,.04,-.1,-.74,-.55,0,.05],[.68,.04,-.12,-.7,-.5,0,.05],[1,.21,-.22,-.44,0,0,0]],
- [[0,.21,-.22,-.44,0,0,0],[.3,.2,.3,-.3,.9,0,.1],[.5,.02,-.26,-.66,-.9,0,.05],[.68,.02,-.3,-.62,-.8,0,.05],[1,.21,-.22,-.44,0,0,0]],
- [[0,.21,-.22,-.44,0,0,0],[.3,.12,-.42,-.3,.7,0,.2],[.5,.06,.06,-.62,-.9,0,-.05],[.68,.06,.1,-.58,-.8,0,-.05],[1,.21,-.22,-.44,0,0,0]]
+ /* LMB A — jab: preparação curta, extensão direta e retorno amortecido. */
+ [[0,.21,-.22,-.44,0,0,0],[.08,.25,-.2,-.39,.1,0,-.04],[.18,.31,-.16,-.34,.22,0,-.12],[.29,.11,-.15,-.68,-.42,0,.06],[.39,.08,-.14,-.72,-.48,0,.08],[.58,.14,-.17,-.56,-.22,0,.03],[.82,.2,-.21,-.46,.03,0,0],[1,.21,-.22,-.44,0,0,0]],
+ /* LMB B — cruzado: sai de fora, cruza o centro e deixa o antebraço terminar o movimento. */
+ [[0,.21,-.22,-.44,0,0,0],[.08,.27,-.2,-.39,.1,0,-.12],[.19,.38,-.17,-.33,.2,0,-.38],[.3,-.015,-.15,-.67,-.43,0,.36],[.4,-.055,-.14,-.71,-.5,0,.42],[.59,.045,-.17,-.57,-.24,0,.22],[.83,.19,-.21,-.46,.03,0,.02],[1,.21,-.22,-.44,0,0,0]],
+ /* M1 A — jab direto e compacto. */
+ [[0,.21,-.22,-.44,0,0,0],[.07,.25,-.2,-.39,.1,0,-.04],[.17,.32,-.16,-.34,.22,0,-.13],[.28,.105,-.15,-.7,-.46,0,.04],[.38,.075,-.14,-.74,-.5,0,.06],[.56,.14,-.17,-.57,-.23,0,.02],[.82,.2,-.21,-.46,.03,0,0],[1,.21,-.22,-.44,0,0,0]],
+ /* M1 B — gancho curto, cotovelo conduz o arco. */
+ [[0,.21,-.22,-.44,0,0,0],[.08,.28,-.2,-.38,.08,0,-.2],[.19,.39,-.16,-.34,.18,0,-.56],[.3,-.025,-.2,-.63,-.36,0,.48],[.4,-.085,-.23,-.66,-.42,0,.58],[.58,.015,-.21,-.55,-.2,0,.32],[.84,.19,-.21,-.46,.02,0,.04],[1,.21,-.22,-.44,0,0,0]],
+ /* M2 — cruzado pesado: mais carga no ombro, alcance e recuperação mais lentos. */
+ [[0,.21,-.22,-.44,0,0,0],[.08,.27,-.24,-.37,.12,0,-.16],[.2,.4,-.29,-.3,.3,0,-.42],[.31,-.035,-.18,-.74,-.62,0,.34],[.42,-.075,-.16,-.77,-.68,0,.4],[.62,.015,-.2,-.61,-.34,0,.2],[.86,.18,-.22,-.47,.02,0,.03],[1,.21,-.22,-.44,0,0,0]],
+ /* M2 após M1 — overhand: mão sobe na preparação e desce em diagonal. */
+ [[0,.21,-.22,-.44,0,0,0],[.08,.28,-.14,-.38,.18,0,-.18],[.2,.37,-.035,-.32,.42,0,-.32],[.31,-.035,-.3,-.7,-.82,0,.36],[.42,-.075,-.34,-.73,-.9,0,.42],[.62,.015,-.25,-.59,-.42,0,.2],[.86,.18,-.22,-.47,.02,0,.03],[1,.21,-.22,-.44,0,0,0]],
+ /* M2 após M2 — uppercut: começa baixo e sobe pelo centro. */
+ [[0,.21,-.22,-.44,0,0,0],[.08,.26,-.31,-.39,.15,0,.04],[.2,.32,-.43,-.32,.3,0,.12],[.31,.09,.005,-.68,-.72,0,-.08],[.42,.055,.055,-.72,-.78,0,-.1],[.62,.13,-.08,-.57,-.38,0,-.03],[.86,.19,-.2,-.47,.02,0,0],[1,.21,-.22,-.44,0,0,0]]
 ];
 const FMAP=[2,3,4,5,6];
 const kBasis=(o,ex,ey,ez)=>o.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(...ex),new THREE.Vector3(...ey),new THREE.Vector3(...ez)));
@@ -1264,7 +1303,7 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
  /* braço de soco (sem arma): aparece enquanto o clipe LMB roda e some ~.35 s depois */
  const pa=!OWM.weapon.id&&!custom&&U.pu>=0;F1.hold=pa?.35:Math.max(0,F1.hold-dt);
  F1.w+=(((pa||F1.hold>0)&&!on?1:0)-F1.w)*(1-Math.exp(-dt*(pa?18:9)));
- VM.g.visible=VM.ok&&fp&&(K.w>.02||F1.w>.02||!!coil||SO.fw>.02);
+ VM.g.visible=VM.ok&&fp&&(K.w>.02||!on||!!coil||SO.fw>.02);
  if(VM.kn)VM.kn.visible=K.w>.02;
  const SW=KSW[K.n],u=K.t>=0?clamp(K.t/K.dur,0,1):0;
  if(tp&&K.w>.01){
@@ -1279,7 +1318,7 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
   const ks=Math.min(1,s.sprint&&sp>4?1:0);K.sp+=(ks-K.sp)*(1-Math.exp(-dt*8));
   let v,dr;
   if(K.w>.02){v=K.t>=0?crN(SW.v,u):GUARD;dr=1-sm(K.dr/.4)}
-  else{const pd=UA&&UA.clips[PUN[U.pk]]?UA.clips[PUN[U.pk]].dur:.5;v=U.pu>=0?crN(FSW[U.fk],clamp(U.pu/pd,0,1)):GUARD;dr=1-sm(F1.w)}
+  else{const pd=UA&&UA.clips[PUN[U.pk]]?UA.clips[PUN[U.pk]].dur:.5;v=U.pu>=0?crN(FSW[U.fk],clamp(U.pu/pd,0,1)):GUARD;dr=0}
   if(SO.fpL.length){for(const e of SO.fpL){const a=v,w=e.w;v=[a[0]+(e.v[0]-a[0])*w,a[1]+(e.v[1]-a[1])*w,a[2]+(e.v[2]-a[2])*w,a[3]+(e.v[3]-a[3])*w,a[4]+(e.v[4]-a[4])*w,a[5]+(e.v[5]-a[5])*w]}dr*=1-SO.fw}   // mão do Estúdio de Animação
   const hw=Math.tan(cam.fov*Math.PI/360)*cam.aspect*.44*.62,xs=Math.min(1,hw/.21),d=dr,br=Math.sin(ST.idleT*1.8);
   let x=v[0]*xs,y=v[1]+br*.004+Math.abs(Math.sin(ST.ph))*.012*A-K.sp*.05+ST.sq.x*.25-d*.35,z=v[2]-K.sp*.02;
