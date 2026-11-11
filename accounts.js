@@ -54,11 +54,9 @@
   }
 
   /* ---------- Tela inicial: criar identidade ---------- */
-  const TS = screens.title;
-  const configButton = [...TS.children].find(el => el.tagName === 'BUTTON' && el.textContent === 'Configurações');
-  const titleButton = B('Conta', () => stateNow() ? openFriends() : openAccount(), TS);
-  if (configButton) TS.insertBefore(titleButton, configButton);
+  const titleButton = null; // Acesso à conta agora fica na seção Amigos do menu Mais.
   const AS = mkScreen('acct', 'Conta', 'solid');
+  OWM.attachMainHubScreen && OWM.attachMainHubScreen('acct');
   E('div', 'dsc acc-intro', 'Crie uma identidade local para jogar com amigos. Não existe senha nem cadastro em servidor.', AS);
   const nameField = fld('Nome de jogador', AS);
   nameField.maxLength = 16;
@@ -69,11 +67,12 @@
   const accountMessage = E('div', 'dsc acc-msg', '', AS);
   const createButton = B('Criar identidade', createIdentity, AS);
   const accountBackRow = E('div', 'row', null, AS);
-  B('Voltar', () => go('title'), accountBackRow);
+  B('Voltar', () => OWM.isMainHubOpen&&OWM.isMainHubOpen()?OWM.closeMainHub():go('title'), accountBackRow);
   nameField.addEventListener('keydown', event => { if (event.key === 'Enter') createIdentity(); });
 
   /* ---------- Tela de conta e amigos ---------- */
   const FS = mkScreen('friends', 'Conta e amigos', 'solid');
+  OWM.attachMainHubScreen && OWM.attachMainHubScreen('friends');
   const who = E('div', 'dsc acc-who', '', FS);
   const codeRow = E('div', 'acc-code-row', null, FS);
   const codeBox = E('div', 'acc-code', '', codeRow);
@@ -102,7 +101,7 @@
   const actionRow = E('div', 'row acc-action-row', null, FS);
   B('Atualizar', () => refresh(true), actionRow);
   B('Apagar identidade', logout, actionRow, 'warn');
-  const friendsBackButton = B('Voltar', () => go('title'), FS);
+  const friendsBackButton = B('Voltar', () => OWM.isMainHubOpen&&OWM.isMainHubOpen()?OWM.closeMainHub():go('title'), FS);
   friendsBackButton.classList.add('acc-back-button');
 
   function createIdentity() {
@@ -144,14 +143,13 @@
   function openAccount() {
     setAccountMessage(storageOK ? '' : 'Armazenamento local bloqueado: a identidade não será mantida ao fechar o jogo.');
     nameField.value = '';
-    go('acct');
-    nameField.focus();
+    if (OWM.isMainHubOpen&&OWM.isMainHubOpen()) OWM.showMainHubScreen('acct'); else { go('acct'); nameField.focus(); }
   }
   function openFriends() {
     if (!engine) return openAccount();
     setFriendsMessage('');
     renderFriends();
-    go('friends');
+    if (OWM.isMainHubOpen&&OWM.isMainHubOpen()) OWM.showMainHubScreen('friends'); else go('friends');
     refresh(true);
   }
 
@@ -543,7 +541,7 @@
     engine = null;
     try { localStorage.removeItem(STORAGE_KEY); storageOK = true; } catch (_) { storageOK = false; }
     emit();
-    go('title');
+    if (OWM.isMainHubOpen&&OWM.isMainHubOpen()) OWM.closeMainHub(); else go('title');
     toast('Identidade apagada deste aparelho.');
   }
 
