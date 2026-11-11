@@ -1348,7 +1348,7 @@ function playAnimByIndex(i){const anims=ld('bc.anims',[]);if(!anims[i]){toast('N
 
 /* ---------- Configurações ---------- */
 function applyAll(){
- const uiPixel=Math.max(0,Math.min(100,Number(S.uiPixel)||0));document.documentElement.style.setProperty('--ui-pixel-cell',(2+uiPixel*.07)+'px');document.documentElement.style.setProperty('--ui-pixel-opacity',(uiPixel/100*.42).toFixed(3));document.body.classList.toggle('ui-pixelated',uiPixel>0);
+ const uiPixel=Math.max(0,Math.min(100,Number(S.uiPixel)||0)),uiPixelStrength=uiPixel/100,uiRoot=document.documentElement;uiRoot.style.setProperty('--ui-pixel-strength',uiPixelStrength.toFixed(2));uiRoot.style.setProperty('--ui-pixel-cell',(2+uiPixelStrength*6)+'px');uiRoot.style.setProperty('--ui-pixel-tint',(uiPixelStrength*.14).toFixed(3));uiRoot.style.setProperty('--ui-pixel-radius',(8*(1-uiPixelStrength))+'px');uiRoot.style.setProperty('--ui-pixel-border',(2+uiPixelStrength*2)+'px');uiRoot.style.setProperty('--ui-pixel-shadow',(2+uiPixelStrength*4)+'px');document.body.classList.toggle('ui-pixelated',uiPixel>0);
  cam.fov=S.fov;
  if(anim.setQuality)anim.setQuality(S.charQ,S.cloth!==0);
  post.apply(Math.max(S.dist,3)*CS);
