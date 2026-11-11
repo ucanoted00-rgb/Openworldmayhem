@@ -295,7 +295,7 @@ function initBloom(){
     vec3 shoulder(vec3 c){vec3 o=max(c-0.8,vec3(0.0));return min(c,vec3(0.8))+0.2*(vec3(1.0)-exp(-o/0.2));}
     vec3 toSRGB(vec3 c){return mix(pow(c,vec3(0.41666))*1.055-vec3(0.055),c*12.92,vec3(lessThanEqual(c,vec3(0.0031308))));}
     void main(){
-     vec2 uv=vUv;
+     vec2 uv=vUv;\n     float crtFrame=1.0;
      float gs=0.7+0.3*sin(uTime*0.8)*sin(uTime*0.31+1.0);   // rajada (0.4..1)
      if(uSand>0.001){   // rajada balança a imagem
       float sw=(vn2(vec2(vUv.y*6.0-uTime*1.3,uTime*0.5))-0.5)*0.010+(vn2(vec2(vUv.y*28.0+uTime*2.1,3.0))-0.5)*0.004;
@@ -305,7 +305,24 @@ function initBloom(){
       float hz=smoothstep(0.0,0.55,vUv.y)*(1.0-smoothstep(0.55,1.0,vUv.y))*0.6+0.4;float a=uHeat*0.0032*hz;
       uv.x+=sin(vUv.y*55.0+uTime*3.1)*a+sin(vUv.y*21.0-uTime*1.7)*a*0.7;uv.y+=sin(vUv.x*37.0+uTime*2.3)*a*0.45;
      }
-     vec3 c=max(texture2D(tDiffuse,uv).rgb,vec3(0.0));
+     /* Curvatura de tubo e resolução retro antes da amostragem do mundo/panorama. */
+     vec2 crtPos=(uv-0.5)*2.0;
+     float radius2=dot(crtPos,crtPos);
+     vec2 curvedPos=crtPos*(1.0+0.055*uCrt*radius2);
+     uv=curvedPos*0.5+0.5;
+     crtFrame=1.0-smoothstep(0.985,1.055,max(abs(curvedPos.x),abs(curvedPos.y)));
+     /* Tracking horizontal e redução de resolução para o modo pixelado. */
+     float tapeRow=floor(uv.y*uRes.y/3.0);
+     float tapeJitter=(h21(vec2(tapeRow,floor(uTime*13.0)))-0.5)*0.0045*uVhs;
+     float tapeTear=step(0.992,h21(vec2(floor(uv.y*54.0),floor(uTime*5.0))))*0.009*uVhs;
+     uv.x+=tapeJitter+tapeTear;
+     float pixelStep=mix(1.0,7.0,uPixel);
+     if(uPixel>0.001)uv=(floor(uv*uRes/pixelStep)+0.5)*pixelStep/uRes;
+     vec2 chroma=vec2(0.0018*uVhs,0.0);
+     vec3 c;
+     c.r=texture2D(tDiffuse,uv+chroma).r;
+     c.g=texture2D(tDiffuse,uv).g;
+     c.b=texture2D(tDiffuse,uv-chroma).b;
      if(uHeat>0.001){c*=mix(vec3(1.0),vec3(1.10,1.0,0.80),uHeat*0.7);c+=vec3(0.035,0.02,0.0)*uHeat;}   // brilho/tom quente
      if(uSand>0.001){   // tempestade de areia: tom ocre dessaturado, véus de poeira, rastros em 3 camadas e vinheta
       float lum=dot(c,vec3(0.299,0.587,0.114));
@@ -324,39 +341,19 @@ function initBloom(){
       float vg=smoothstep(0.30,0.95,length((vUv-0.5)*vec2(1.15,1.0)*1.25));
       c=mix(c,c*vec3(0.62,0.44,0.28)+uSCol*0.15,vg*0.55*uSand);
      }
-     /* Pixelização por amostragem: reduz a grade apenas quando solicitada, sem redimensionar a tela. */
-     float pixelStep=mix(1.0,6.0,uPixel);
-     vec2 sampleUv=uv;
-     /* Curvatura de tubo CRT (barril), aplicada ao mundo 3D e ao panorama do menu. */
-     vec2 crtPos=(sampleUv-0.5)*2.0;
-     float radius2=dot(crtPos,crtPos);
-     vec2 curvedPos=crtPos*(1.0+0.045*uCrt*radius2);
-     sampleUv=curvedPos*0.5+0.5;
-     float crtFrame=1.0-smoothstep(0.985,1.055,max(abs(curvedPos.x),abs(curvedPos.y)));
-     /* Pequena instabilidade horizontal do VHS: linhas de tracking raras e deslocamento cromático. */
-     float tapeRow=floor(sampleUv.y*uRes.y/3.0);
-     float tapeJitter=(h21(vec2(tapeRow,floor(uTime*13.0)))-0.5)*0.0045*uVhs;
-     float tapeTear=step(0.992,h21(vec2(floor(sampleUv.y*54.0),floor(uTime*5.0))))*0.009*uVhs;
-     sampleUv.x+=tapeJitter+tapeTear;
-     if(uPixel>0.001)sampleUv=(floor(sampleUv*uRes/pixelStep)+0.5)*pixelStep/uRes;
-     vec2 chroma=vec2(0.0018*uVhs,0.0);
-     vec3 c;
-     c.r=texture2D(tDiffuse,sampleUv+chroma).r;
-     c.g=texture2D(tDiffuse,sampleUv).g;
-     c.b=texture2D(tDiffuse,sampleUv-chroma).b;
-     c*=mix(1.0,crtFrame,uCrt);
      if(uVhs>0.001){
       float lum=dot(c,vec3(0.299,0.587,0.114));
       c=mix(c,vec3(lum)*vec3(1.04,1.0,0.93),0.10*uVhs);
-      float tapeScan=0.965+0.035*sin(sampleUv.y*uRes.y*3.14159+uTime*11.0);
-      float tapeGrain=h21(floor(sampleUv*uRes*0.5)+floor(uTime*24.0))-0.5;
+      float tapeScan=0.965+0.035*sin(uv.y*uRes.y*3.14159+uTime*11.0);
+      float tapeGrain=h21(floor(uv*uRes*0.5)+floor(uTime*24.0))-0.5;
       c*=mix(1.0,tapeScan,uVhs);
       c+=tapeGrain*0.055*uVhs;
      }
      if(uCrt>0.001){
-      float crtScan=0.94+0.06*sin(sampleUv.y*uRes.y*3.14159);
+      float crtScan=0.94+0.06*sin(uv.y*uRes.y*3.14159);
       vec3 phosphor=0.975+0.025*cos(vec3(gl_FragCoord.x,gl_FragCoord.x-2.094,gl_FragCoord.x-4.188)*2.094);
       float edgeVignette=1.0-smoothstep(0.58,1.36,length(curvedPos));
+      c*=mix(1.0,crtFrame,uCrt);
       c*=mix(1.0,crtScan,uCrt);
       c*=mix(vec3(1.0),phosphor,0.7*uCrt);
       c*=mix(1.0,0.78+0.22*edgeVignette,0.72*uCrt);
