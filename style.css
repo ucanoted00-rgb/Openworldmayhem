@@ -1209,16 +1209,16 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
 }
 
 
-/* CRT ajustável somente na interface: botões, navegação e tipografia.
-   Não aplica filtro ao canvas, cenário 3D, fundos ou painéis inteiros. */
+/* CRT de tubo: acabamento na interface e vidro/scanlines sobre a tela inteira.
+   A curvatura geométrica do mundo e do panorama é feita no passe final do WebGL. */
 .ui-crt .btn,
 .ui-crt .main-hub-item{
- border-color:rgba(135,235,180,calc(.22 + var(--ui-crt-strength,0)*.55));
+ border-color:rgba(145,255,195,calc(.25 + var(--ui-crt-strength,0)*.58));
  box-shadow:
   0 4px 0 #000a,
-  0 0 calc(var(--ui-crt-strength,0)*10px) rgba(95,255,165,calc(var(--ui-crt-strength,0)*.28)),
-  inset 0 1px 0 rgba(220,255,230,.18),
-  inset 0 -2px 0 rgba(0,0,0,.28);
+  0 0 calc(var(--ui-crt-strength,0)*13px) rgba(95,255,165,calc(var(--ui-crt-strength,0)*.34)),
+  inset 0 1px 0 rgba(225,255,235,.23),
+  inset 0 -2px 0 rgba(0,0,0,.32);
 }
 .ui-crt .btn::after,
 .ui-crt .main-hub-item::after{
@@ -1228,10 +1228,10 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
  z-index:2;
  border-radius:inherit;
  pointer-events:none;
- opacity:calc(var(--ui-crt-strength,0)*.58);
+ opacity:calc(var(--ui-crt-strength,0)*.7);
  background:
-  repeating-linear-gradient(180deg,rgba(170,255,205,.2) 0 1px,transparent 1px var(--ui-crt-scan,3px)),
-  linear-gradient(180deg,rgba(255,255,255,.12),transparent 38%,rgba(0,0,0,.16));
+  repeating-linear-gradient(180deg,rgba(170,255,205,.22) 0 1px,transparent 1px var(--ui-crt-scan,3px)),
+  linear-gradient(180deg,rgba(255,255,255,.16),transparent 36%,rgba(0,0,0,.2));
 }
 .ui-crt .btn,
 .ui-crt .screen h1,
@@ -1244,15 +1244,15 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
 .ui-crt #hud span,
 .ui-crt #hud p{
  text-shadow:
-  0 0 calc(var(--ui-crt-strength,0)*5px) rgba(145,255,190,calc(var(--ui-crt-strength,0)*.8)),
-  calc(var(--ui-crt-strength,0)*.45px) 0 rgba(180,255,220,calc(var(--ui-crt-strength,0)*.55)),
-  calc(var(--ui-crt-strength,0)*-.35px) 0 rgba(110,210,255,calc(var(--ui-crt-strength,0)*.38));
+  0 0 calc(var(--ui-crt-strength,0)*6px) rgba(145,255,190,calc(var(--ui-crt-strength,0)*.9)),
+  calc(var(--ui-crt-strength,0)*.55px) 0 rgba(180,255,220,calc(var(--ui-crt-strength,0)*.62)),
+  calc(var(--ui-crt-strength,0)*-.4px) 0 rgba(110,210,255,calc(var(--ui-crt-strength,0)*.42));
 }
 .ui-crt .main-hub-item{overflow:hidden}
 @keyframes uiCrtFlicker{
   0%,97%,100%{opacity:1}
-  98%{opacity:.96}
-  99%{opacity:.985}
+  98%{opacity:.965}
+  99%{opacity:.99}
 }
 .ui-crt .btn,
 .ui-crt .screen h1,
@@ -1262,11 +1262,53 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
 .ui-crt .screen label,
 .ui-crt .main-hub-item span,
 .ui-crt #hud span,
-.ui-crt #hud p{
- animation:uiCrtFlicker 7s steps(1,end) infinite;
-}
+.ui-crt #hud p{animation:uiCrtFlicker 7s steps(1,end) infinite}
 @media(prefers-reduced-motion:reduce){
  .ui-crt .btn,.ui-crt .screen h1,.ui-crt .screen h2,.ui-crt .screen h3,
  .ui-crt .screen p,.ui-crt .screen label,.ui-crt .main-hub-item span,
  .ui-crt #hud span,.ui-crt #hud p{animation:none}
 }
+
+/* Vidro CRT cobre também menus e HUD; não intercepta toques nem cliques. */
+body.ui-crt::before,
+body.ui-vhs::before{
+ content:"";
+ position:fixed;
+ inset:0;
+ z-index:999;
+ pointer-events:none;
+}
+body.ui-crt::before{
+ opacity:calc(var(--ui-crt-strength,0)*.72);
+ mix-blend-mode:multiply;
+ background:
+  repeating-linear-gradient(180deg,rgba(0,0,0,.20) 0 1px,transparent 1px 3px),
+  radial-gradient(ellipse at center,transparent 48%,rgba(0,0,0,.18) 78%,rgba(0,0,0,.62) 120%);
+}
+body.ui-vhs::before{
+ opacity:calc(var(--ui-vhs-strength,0)*.18);
+ mix-blend-mode:overlay;
+ background:repeating-linear-gradient(180deg,rgba(210,245,255,.30) 0 1px,transparent 1px var(--ui-vhs-scan,2px));
+}
+body.ui-crt.ui-vhs::before{
+ opacity:calc(var(--ui-crt-strength,0)*.62 + var(--ui-vhs-strength,0)*.12);
+ background:
+  repeating-linear-gradient(180deg,rgba(210,245,255,.16) 0 1px,transparent 1px var(--ui-vhs-scan,2px)),
+  repeating-linear-gradient(180deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px),
+  radial-gradient(ellipse at center,transparent 48%,rgba(0,0,0,.2) 78%,rgba(0,0,0,.62) 120%);
+}
+
+/* Pixel + VHS podem coexistir na UI sem um apagar a textura do outro. */
+.ui-pixelated.ui-vhs .btn{
+ background-image:
+  repeating-linear-gradient(180deg,rgba(0,0,0,calc(var(--ui-vhs-strength,0)*.2)) 0 1px,transparent 1px var(--ui-vhs-scan,2px)),
+  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
+  linear-gradient(180deg,#34394a 0%,#1b1f2a 100%);
+ background-size:auto,var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto;
+ background-blend-mode:multiply,screen,normal;
+}
+
+/* Formato opcional: deixa todos os botões da interface, inclusive HUD móvel, quadrados. */
+body.ui-square-buttons button,
+body.ui-square-buttons .btn,
+body.ui-square-buttons .main-hub-item{border-radius:0!important}
