@@ -308,8 +308,9 @@ function initBloom(){
      }
      /* Curvatura de tubo e resolução retro antes da amostragem do mundo/panorama. */
      vec2 crtPos=(uv-0.5)*2.0;
-     float radius2=dot(crtPos,crtPos);
-     vec2 curvedPos=crtPos*(1.0+0.055*uCrt*radius2);
+     vec2 crtMetric=crtPos*vec2(max(uRes.x/uRes.y,1.0),max(uRes.y/uRes.x,1.0));
+     float radius2=dot(crtMetric,crtMetric);
+     vec2 curvedPos=crtPos*(1.0+0.045*uCrt*radius2);
      uv=curvedPos*0.5+0.5;
      crtFrame=1.0-smoothstep(0.985,1.055,max(abs(curvedPos.x),abs(curvedPos.y)));
      /* Tracking horizontal e redução de resolução para o modo pixelado. */
@@ -353,7 +354,7 @@ function initBloom(){
      if(uCrt>0.001){
       float crtScan=0.94+0.06*sin(uv.y*uRes.y*3.14159);
       vec3 phosphor=0.975+0.025*cos(vec3(gl_FragCoord.x,gl_FragCoord.x-2.094,gl_FragCoord.x-4.188)*2.094);
-      float edgeVignette=1.0-smoothstep(0.58,1.36,length(curvedPos));
+      float edgeVignette=1.0-smoothstep(0.58,1.36,length(curvedPos*vec2(max(uRes.x/uRes.y,1.0),max(uRes.y/uRes.x,1.0))));
       c*=mix(1.0,crtFrame,uCrt);
       c*=mix(1.0,crtScan,uCrt);
       c*=mix(vec3(1.0),phosphor,0.7*uCrt);
