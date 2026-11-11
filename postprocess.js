@@ -495,8 +495,8 @@ function apply(far){
  }
  if(lf!==S.rq){lf=S.rq;DY.chk=null;DY.cool=2;resize();}
  vig.style.opacity=S.vig?1:0;
- document.body.classList.toggle('world-fx-fallback',!finPass);
- if(finPass){const u=finPass.uniforms;u.uPixel.value=Math.max(0,Math.min(100,Number(S.uiPixel)||0))/100;u.uVhs.value=Math.max(0,Math.min(100,Number(S.uiVhs)||0))/100;u.uCrt.value=Math.max(0,Math.min(100,Number(S.uiCrt)||0))/100;}
+ const worldFx=Number(S.fxScope)!==0;document.body.classList.toggle('world-fx-enabled',worldFx);document.body.classList.toggle('world-fx-fallback',!finPass);
+ if(finPass){const u=finPass.uniforms;u.uPixel.value=worldFx?Math.max(0,Math.min(100,Number(S.uiPixel)||0))/100:0;u.uVhs.value=worldFx?Math.max(0,Math.min(100,Number(S.uiVhs)||0))/100:0;u.uCrt.value=worldFx?Math.max(0,Math.min(100,Number(S.uiCrt)||0))/100:0;}
  bloomWant=!!S.bloom;if(bloomPass)bloomPass.enabled=bloomWant;syncAA();
  if(fogPass){fogPass.enabled=S.vfog>0&&!fogBroken;const u=fogPass.uniforms;u.steps.value=S.vfog>1?32:16;u.octaves.value=S.vfog>1?2:1}
  cam.updateProjectionMatrix();
