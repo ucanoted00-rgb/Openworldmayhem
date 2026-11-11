@@ -13,7 +13,7 @@ function px(n,f){const c=document.createElement('canvas');c.width=c.height=n;con
 
 /* ---------- Configurações ---------- */
 /* tone: 0=none 1=linear 2=Reinhard 3=Cineon 4=ACES — padrão Reinhard */
-const DEF={fov:70,dist:6,sens:100,bright:50,rq:5,fps:0,invert:0,bob:1,shadow:touch?1:2,tone:2,vig:1,camMode:0,hdTex:0,bloom:1,vfog:touch?1:2,lockMouse:1,dyn:1,mvol:50,collect:1,charQ:touch?1:2,cloth:1,wRiver:1,wFlow:0,wFluid:0,sand:1,titleBg:0,hz:0,aa:0,chq:1,tq:1};   // hz: 0 Automática · 1 60 · 2 90 · 3 120 · aa: FXAA (desligado por padrão até validar visualmente)
+const DEF={fov:70,dist:6,sens:100,bright:50,rq:5,fps:0,invert:0,bob:1,shadow:touch?1:2,tone:2,vig:1,camMode:0,hdTex:0,bloom:1,vfog:touch?1:2,lockMouse:1,dyn:1,mvol:50,collect:1,charQ:touch?1:2,cloth:1,wRiver:1,wFlow:0,wFluid:0,sand:1,titleBg:0,hz:0,aa:0,chq:1,tq:1,uiPixel:0};   // hz: 0 Automática · 1 60 · 2 90 · 3 120 · aa: FXAA (desligado por padrão até validar visualmente)
 const saved=ld('bc.s',{});
 if(!saved.v){saved.tone=2;try{localStorage.setItem('bc.s',JSON.stringify(saved))}catch(e){}}
 const S={...DEF,...saved};S.v=1;
