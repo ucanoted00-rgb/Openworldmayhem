@@ -1310,6 +1310,15 @@ body.ui-crt.ui-vhs::before{
 
 .visual-grid .fx-note{grid-column:1/-1;max-width:100%;text-align:left}
 
+/* Fallback para GPUs sem render target HDR: mantém o acabamento no canvas do jogo/panorama. */
+body.world-fx-fallback #c{
+ filter:
+  contrast(calc(1 + var(--ui-crt-strength,0)*.12 + var(--ui-vhs-strength,0)*.08))
+  saturate(calc(1 + var(--ui-crt-strength,0)*.08 - var(--ui-vhs-strength,0)*.12))
+  brightness(calc(1 - var(--ui-crt-strength,0)*.035));
+}
+body.world-fx-fallback.ui-pixelated #c{image-rendering:pixelated}
+
 /* Formato opcional: deixa todos os botões da interface, inclusive HUD móvel, quadrados. */
 body.ui-square-buttons button,
 body.ui-square-buttons .btn,
