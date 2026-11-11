@@ -276,11 +276,11 @@ function initBloom(){
 
   /* passe final: "ombro" suave para valores > 0.8 + conversão linear → sRGB (o render target é linear) */
   const fin=new T.ShaderPass({
-   uniforms:{tDiffuse:{value:null},uHeat:{value:0},uTime:{value:0},uSand:{value:0},uFlow:{value:new T.Vector2(1,-.12)},uRes:{value:new T.Vector2(1,1)},uSCol:{value:new T.Color(.5,.25,.09)}},
+   uniforms:{tDiffuse:{value:null},uHeat:{value:0},uTime:{value:0},uSand:{value:0},uFlow:{value:new T.Vector2(1,-.12)},uRes:{value:new T.Vector2(1,1)},uSCol:{value:new T.Color(.5,.25,.09)},uPixel:{value:0},uVhs:{value:0},uCrt:{value:0}},
    vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
    fragmentShader:`
     uniform sampler2D tDiffuse;uniform float uHeat;uniform float uTime;varying vec2 vUv;
-    uniform float uSand;uniform vec2 uFlow;uniform vec2 uRes;uniform vec3 uSCol;
+    uniform float uSand;uniform vec2 uFlow;uniform vec2 uRes;uniform vec3 uSCol;uniform float uPixel;uniform float uVhs;uniform float uCrt;
     float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
     float vn2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(h21(i),h21(i+vec2(1.0,0.0)),f.x),mix(h21(i+vec2(0.0,1.0)),h21(i+vec2(1.0,1.0)),f.x),f.y);}
     float streak(vec2 q,float len,float dens,float seed){   // um rastro de areia por célula (células longas ao longo do vento)
@@ -323,6 +323,44 @@ function initBloom(){
       c+=(uSCol*1.7+vec3(0.04))*st*uSand*(0.6+0.4*gs);
       float vg=smoothstep(0.30,0.95,length((vUv-0.5)*vec2(1.15,1.0)*1.25));
       c=mix(c,c*vec3(0.62,0.44,0.28)+uSCol*0.15,vg*0.55*uSand);
+     }
+     /* Pixelização por amostragem: reduz a grade apenas quando solicitada, sem redimensionar a tela. */
+     float pixelStep=mix(1.0,6.0,uPixel);
+     vec2 sampleUv=uv;
+     /* Curvatura de tubo CRT (barril), aplicada ao mundo 3D e ao panorama do menu. */
+     vec2 crtPos=(sampleUv-0.5)*2.0;
+     float radius2=dot(crtPos,crtPos);
+     vec2 curvedPos=crtPos*(1.0+0.045*uCrt*radius2);
+     sampleUv=curvedPos*0.5+0.5;
+     float crtFrame=1.0-smoothstep(0.985,1.055,max(abs(curvedPos.x),abs(curvedPos.y)));
+     /* Pequena instabilidade horizontal do VHS: linhas de tracking raras e deslocamento cromático. */
+     float tapeRow=floor(sampleUv.y*uRes.y/3.0);
+     float tapeJitter=(h21(vec2(tapeRow,floor(uTime*13.0)))-0.5)*0.0045*uVhs;
+     float tapeTear=step(0.992,h21(vec2(floor(sampleUv.y*54.0),floor(uTime*5.0))))*0.009*uVhs;
+     sampleUv.x+=tapeJitter+tapeTear;
+     if(uPixel>0.001)sampleUv=(floor(sampleUv*uRes/pixelStep)+0.5)*pixelStep/uRes;
+     vec2 chroma=vec2(0.0018*uVhs,0.0);
+     vec3 c;
+     c.r=texture2D(tDiffuse,sampleUv+chroma).r;
+     c.g=texture2D(tDiffuse,sampleUv).g;
+     c.b=texture2D(tDiffuse,sampleUv-chroma).b;
+     c*=mix(1.0,crtFrame,uCrt);
+     if(uVhs>0.001){
+      float lum=dot(c,vec3(0.299,0.587,0.114));
+      c=mix(c,vec3(lum)*vec3(1.04,1.0,0.93),0.10*uVhs);
+      float tapeScan=0.965+0.035*sin(sampleUv.y*uRes.y*3.14159+uTime*11.0);
+      float tapeGrain=h21(floor(sampleUv*uRes*0.5)+floor(uTime*24.0))-0.5;
+      c*=mix(1.0,tapeScan,uVhs);
+      c+=tapeGrain*0.055*uVhs;
+     }
+     if(uCrt>0.001){
+      float crtScan=0.94+0.06*sin(sampleUv.y*uRes.y*3.14159);
+      vec3 phosphor=0.975+0.025*cos(vec3(gl_FragCoord.x,gl_FragCoord.x-2.094,gl_FragCoord.x-4.188)*2.094);
+      float edgeVignette=1.0-smoothstep(0.58,1.36,length(curvedPos));
+      c*=mix(1.0,crtScan,uCrt);
+      c*=mix(vec3(1.0),phosphor,0.7*uCrt);
+      c*=mix(1.0,0.78+0.22*edgeVignette,0.72*uCrt);
+      c*=1.0+0.035*uCrt;
      }
      gl_FragColor=vec4(toSRGB(clamp(shoulder(c),0.0,1.0)),1.0);}`
   });
@@ -458,6 +496,7 @@ function apply(far){
  }
  if(lf!==S.rq){lf=S.rq;DY.chk=null;DY.cool=2;resize();}
  vig.style.opacity=S.vig?1:0;
+ if(finPass){const u=finPass.uniforms;u.uPixel.value=Math.max(0,Math.min(100,Number(S.uiPixel)||0))/100;u.uVhs.value=Math.max(0,Math.min(100,Number(S.uiVhs)||0))/100;u.uCrt.value=Math.max(0,Math.min(100,Number(S.uiCrt)||0))/100;}
  bloomWant=!!S.bloom;if(bloomPass)bloomPass.enabled=bloomWant;syncAA();
  if(fogPass){fogPass.enabled=S.vfog>0&&!fogBroken;const u=fogPass.uniforms;u.steps.value=S.vfog>1?32:16;u.octaves.value=S.vfog>1?2:1}
  cam.updateProjectionMatrix();
@@ -611,6 +650,7 @@ function bodyNearScreen(m){
  return Math.abs(_bv.y)<k&&Math.abs(_bv.x)<k*cam.aspect;
 }
 function render(){
+ if(finPass)R.getDrawingBufferSize(finPass.uniforms.uRes.value);
  if(aaPass&&aaPass.enabled){R.getDrawingBufferSize(_rs);aaPass.uniforms.rcp.value.set(1/_rs.x,1/_rs.y)}
  if(bloomPass){if(bloomWant){cam.updateMatrixWorld();_bi.copy(cam.matrixWorld).invert();bloomPass.enabled=bodyNearScreen(sunMesh)||bodyNearScreen(moonMesh)}else bloomPass.enabled=false}
  if(fogPass&&fogPass.enabled&&useComposer()){
