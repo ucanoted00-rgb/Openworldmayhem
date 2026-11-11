@@ -1098,15 +1098,67 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
  .main-hub-content .list{height:min(35vh,260px)}
 }
 
-/* Pixelização configurável da interface (0–100), sem reduzir a resolução do mundo 3D. */
-.ui-pixelated .screen::after,
-.ui-pixelated .main-hub::after,
-.ui-pixelated #hud::after{
- content:"";position:absolute;inset:0;z-index:40;pointer-events:none;opacity:var(--ui-pixel-opacity,0);
- background-image:
-  linear-gradient(to right,rgba(0,0,0,.42) 1px,transparent 1px),
-  linear-gradient(to bottom,rgba(0,0,0,.42) 1px,transparent 1px);
- background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px);
- mix-blend-mode:multiply;
+/* Pixelização real dos componentes da interface: botões, controles e fundos dos menus. */
+.ui-pixelated .btn,
+.ui-pixelated .main-hub-item,
+.ui-pixelated .main-hub-close,
+.ui-pixelated .fld input,
+.ui-pixelated .list,
+.ui-pixelated .w{
+ border-radius:var(--ui-pixel-radius,0px);
+ image-rendering:pixelated;
 }
-.ui-pixelated .screen,.ui-pixelated #hud{image-rendering:pixelated}
+.ui-pixelated .btn{
+ border-width:var(--ui-pixel-border,2px);
+ background-image:
+  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
+  linear-gradient(#2a2d3a,#1f2129);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto;
+ box-shadow:0 var(--ui-pixel-shadow,2px) 0 #000a,var(--ui-pixel-shadow,2px) var(--ui-pixel-shadow,2px) 0 #0005;
+}
+.ui-pixelated .btn:hover:not(:disabled),
+.ui-pixelated .btn:focus-visible{
+ background-image:
+  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
+  linear-gradient(#3a3d4a,#2a2d38);
+ box-shadow:0 calc(var(--ui-pixel-shadow,2px) + 2px) 0 #000a,var(--ui-pixel-shadow,2px) calc(var(--ui-pixel-shadow,2px) + 2px) 0 #0007;
+}
+.ui-pixelated .btn.tab.on{
+ background-image:
+  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
+  linear-gradient(var(--ac),var(--ac));
+}
+.ui-pixelated .screen.solid,
+.ui-pixelated .screen.dim,
+.ui-pixelated .screen.title,
+.ui-pixelated .main-hub,
+.ui-pixelated .main-hub-nav{
+ background-image:
+  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
+  radial-gradient(ellipse at 50% 0%,#232638 0%,#0e0f15 70%);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto;
+}
+.ui-pixelated .screen.title .blob{
+ filter:none;
+ border-radius:0;
+}
+.ui-pixelated .main-hub-item{
+ border-radius:var(--ui-pixel-radius,0px);
+ background-image:conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px);
+}
+.ui-pixelated .main-hub-item.on{
+ box-shadow:inset 0 0 0 var(--ui-pixel-border,2px) #ff7180,var(--ui-pixel-shadow,2px) var(--ui-pixel-shadow,2px) 0 #0005;
+}
+.ui-pixelated .main-hub-close,
+.ui-pixelated .fld input,
+.ui-pixelated .list,
+.ui-pixelated .w{
+ border-width:var(--ui-pixel-border,2px);
+ box-shadow:var(--ui-pixel-shadow,2px) var(--ui-pixel-shadow,2px) 0 #0005;
+}
+.ui-pixelated .list{
+ background-image:conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px);
+}
+.ui-pixelated .sl i{border-radius:var(--ui-pixel-radius,0px)}
