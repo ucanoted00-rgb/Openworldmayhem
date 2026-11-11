@@ -1098,19 +1098,9 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
  .main-hub-content .list{height:min(35vh,260px)}
 }
 
-/* Pixel art aplicado apenas aos componentes de UI — nunca ao viewport inteiro. */
-.ui-pixelated .btn,
-.ui-pixelated .main-hub-item,
-.ui-pixelated .main-hub-close,
-.ui-pixelated .fld input,
-.ui-pixelated .list,
-.ui-pixelated .w{
- border-radius:var(--ui-pixel-radius,0px);
- image-rendering:pixelated;
-}
-
-/* Botões elevados: topo iluminado, laterais em sombra e extrusão inferior. */
+/* Pixelização limitada aos botões e à tipografia. Fundos, cenário e painéis permanecem intactos. */
 .ui-pixelated .btn{
+ border-radius:var(--ui-pixel-radius,0px);
  border-width:var(--ui-pixel-border,2px);
  border-color:#545b70;
  background-image:
@@ -1124,7 +1114,7 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
   inset 2px 0 0 rgba(255,255,255,.09),
   inset 0 -3px 0 rgba(0,0,0,.42),
   inset -2px 0 0 rgba(0,0,0,.2);
- transition:transform .1s,box-shadow .1s,background-color .1s;
+ transition:transform .1s,box-shadow .1s;
 }
 .ui-pixelated .btn:hover:not(:disabled),
 .ui-pixelated .btn:focus-visible{
@@ -1133,89 +1123,33 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
  background-image:
   conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
   linear-gradient(180deg,#59647c 0%,#363e52 55%,#202635 100%);
- box-shadow:
-  0 calc(var(--ui-pixel-shadow,2px) + 2px) 0 #10131c,
-  0 calc(var(--ui-pixel-shadow,2px) + 5px) 0 #0009,
-  inset 0 2px 0 rgba(255,255,255,.32),
-  inset 2px 0 0 rgba(255,255,255,.12),
-  inset 0 -3px 0 rgba(0,0,0,.4);
+ box-shadow:0 calc(var(--ui-pixel-shadow,2px) + 2px) 0 #10131c,0 calc(var(--ui-pixel-shadow,2px) + 5px) 0 #0009,inset 0 2px 0 rgba(255,255,255,.32),inset 2px 0 0 rgba(255,255,255,.12),inset 0 -3px 0 rgba(0,0,0,.4);
 }
 .ui-pixelated .btn:active:not(:disabled){
  transform:translateY(2px);
- box-shadow:
-  0 1px 0 #10131c,
-  inset 0 3px 0 rgba(0,0,0,.3),
-  inset 0 -1px 0 rgba(255,255,255,.12);
+ box-shadow:0 1px 0 #10131c,inset 0 3px 0 rgba(0,0,0,.3),inset 0 -1px 0 rgba(255,255,255,.12);
 }
 .ui-pixelated .btn.tab.on{
  background-image:
   conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
   linear-gradient(180deg,#ff7581 0%,#e83a4e 52%,#991e32 100%);
  border-color:#ff9aa4;
- box-shadow:
-  0 var(--ui-pixel-shadow,2px) 0 #671526,
-  0 calc(var(--ui-pixel-shadow,2px) + 3px) 0 #0009,
-  inset 0 2px 0 rgba(255,255,255,.3),
-  inset 0 -3px 0 rgba(0,0,0,.32);
+ box-shadow:0 var(--ui-pixel-shadow,2px) 0 #671526,0 calc(var(--ui-pixel-shadow,2px) + 3px) 0 #0009,inset 0 2px 0 rgba(255,255,255,.3),inset 0 -3px 0 rgba(0,0,0,.32);
 }
 
-/* A textura fica confinada à navegação lateral, não ao painel que cobre o viewport. */
-.ui-pixelated .main-hub-nav{
- background-image:
-  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
-  linear-gradient(180deg,#171d2b 0%,#090c14 100%);
- background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto;
- border-right:2px solid #343d51;
- box-shadow:inset -3px 0 0 rgba(255,255,255,.08),5px 0 0 rgba(0,0,0,.24);
-}
-.ui-pixelated .main-hub-item{
- border:2px solid transparent;
- box-shadow:inset 0 2px 0 rgba(255,255,255,.10),inset 0 -3px 0 rgba(0,0,0,.2);
- background-image:conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0);
- background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px);
-}
-.ui-pixelated .main-hub-item.on{
- border-color:#ff7180;
- background-color:#522633;
- box-shadow:
-  inset 0 2px 0 rgba(255,255,255,.23),
-  inset 0 -4px 0 rgba(0,0,0,.3),
-  0 3px 0 #170e19,
-  0 6px 0 rgba(0,0,0,.32);
-}
-.ui-pixelated .main-hub-close{
- border-width:var(--ui-pixel-border,2px);
- border-color:#59627a;
- background-image:
-  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
-  linear-gradient(180deg,#41495d,#202635);
- background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto;
- box-shadow:0 4px 0 #080b12,inset 0 2px 0 rgba(255,255,255,.24),inset 0 -3px 0 rgba(0,0,0,.38);
-}
-
-/* Superfícies de menu delimitadas: lista, cartões e campos, com borda e relevo. */
-.ui-pixelated .list{
- border:2px solid #3d465d;
- background-color:#101521;
- background-image:
-  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
-  linear-gradient(180deg,#192131,#0c111b);
- background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto;
- box-shadow:0 4px 0 #070a10,0 7px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.12),inset 0 -3px 0 rgba(0,0,0,.3);
-}
-.ui-pixelated .fld input,
-.ui-pixelated .w{
- border-width:var(--ui-pixel-border,2px);
- border-color:#404a60;
- box-shadow:0 3px 0 #080b12,inset 0 2px 0 rgba(255,255,255,.12),inset 0 -2px 0 rgba(0,0,0,.28);
-}
-.ui-pixelated .fld input{
- background-image:linear-gradient(180deg,#151c2b,#090d15);
-}
-.ui-pixelated .w{
- background-image:linear-gradient(180deg,#252d40,#151b29);
-}
-.ui-pixelated .sl i{
- border-radius:var(--ui-pixel-radius,0px);
- box-shadow:inset 0 2px 0 rgba(255,255,255,.28),0 2px 0 rgba(0,0,0,.55);
+/* Aparência em blocos apenas nas letras; não altera cor ou textura dos fundos. */
+.ui-pixelated .btn,
+.ui-pixelated .screen h1,
+.ui-pixelated .screen h2,
+.ui-pixelated .screen h3,
+.ui-pixelated .screen p,
+.ui-pixelated .screen label,
+.ui-pixelated .screen .title,
+.ui-pixelated .main-hub-item span,
+.ui-pixelated #hud span,
+.ui-pixelated #hud p{
+ -webkit-text-stroke:calc(var(--ui-pixel-strength,0)*.45px) currentColor;
+ text-shadow:
+  calc(var(--ui-pixel-strength,0)*.7px) 0 0 currentColor,
+  0 calc(var(--ui-pixel-strength,0)*.7px) 0 currentColor;
 }
