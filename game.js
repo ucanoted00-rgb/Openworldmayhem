@@ -1288,6 +1288,7 @@ function setShiftLock(on){
  S.shiftLock=on?1:0;tp3=!!S.shiftLock||S.camMode===1;
  syncShiftLockButton();st('bc.s',S);
  if(on&&!touch&&state==='play'&&!document.pointerLockElement)lock(true);
+ else if(!on&&!S.lockMouse&&!touch&&document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock();
 }
 const shiftLockBtn=$('#bShiftLock');
 if(shiftLockBtn)shiftLockBtn.addEventListener('click',()=>setShiftLock(!S.shiftLock));
