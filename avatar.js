@@ -830,6 +830,37 @@ function ualSamp(c,t,oQ,oP){
  for(let k=0;k<oQ.length;k++){const o=3+k*4;_q1.set(F[a+o],F[a+o+1],F[a+o+2],F[a+o+3]);_q2.set(F[b+o],F[b+o+1],F[b+o+2],F[b+o+3]);oQ[k].copy(_q1).slerp(_q2,u)}
  cleanClipPose(oQ);
 }
+/* Socos próprios do rig do OWM. Substituem os clipes corporais genéricos do pack base:
+   preparação curta, tronco/quadril antes do braço, guarda da mão oposta e recuperação com inércia. */
+const PUNCH_BONE_INDEX=Object.fromEntries(UA.ORDER.map((n,i)=>[n,i]));
+function punchBodyPose(t,cat,fk,out){
+ const smooth=(a,b)=>sm((t-a)/Math.max(.001,b-a));
+ const prep=smooth(0,.18)*(1-smooth(.13,.32));
+ const drive=smooth(.12,.29)*(1-smooth(.34,.53));
+ const follow=smooth(.3,.5)*(1-smooth(.72,.94));
+ const heavy=cat==='m2'?1:0;
+ const hook=fk===1||fk===3;
+ const overhand=heavy&&fk===5;
+ const uppercut=heavy&&fk===6;
+ const side=(hook||overhand)?-1:1;
+ const power=heavy?1.12:1;
+ const torsoYaw=side*(.055*prep+(.16+.035*heavy)*drive+.055*follow);
+ const put=(name,x,y,z)=>{const i=PUNCH_BONE_INDEX[name];if(i!==undefined)out[i].setFromEuler(_ea.set(x,y,z))};
+ // Quadril contrapõe o tronco; cabeça e braço não começam no mesmo instante.
+ put('hip',-.018*drive,-torsoYaw*.46,-side*.012*drive);
+ put('upper',.025*prep+(.105+.035*heavy)*drive+.035*follow,torsoYaw,side*.018*drive);
+ // Ombro direito: recolhe, acelera e passa um pouco do ponto de contato.
+ let shoulderX=.12*prep-(.88+.16*heavy)*drive+.12*follow;
+ let shoulderY=side*(.025*prep+.12*drive);
+ let shoulderZ=side*(hook?.42:overhand?.3:uppercut?-.16:.045)*drive+side*.08*prep;
+ if(uppercut)shoulderX-=.08*drive;
+ put('RA',shoulderX,shoulderY,shoulderZ);
+ put('RE',-.52*prep-.1*drive-.24*follow,0,0);
+ // Braço esquerdo acompanha o peito como guarda, sem copiar o golpe do braço direito.
+ put('LA',-.42-.22*(prep+drive*.72+follow*.35),0,side*.16);
+ put('LE',-.55-.2*(prep+drive*.5),0,0);
+}
+
 /* x = estado do jogo neste frame */
 function ualLayer(dt,x){
  const C=UA.clips,{og,sp,vy,mining,mineA,show,landV,cp,camYaw}=x;
@@ -872,8 +903,9 @@ function ualLayer(dt,x){
  if(sum===0){ualSamp(C.idle,U.t.idle,aQ,aP)}
 
  if(wp>.003){
-  ualSamp(pc,U.pu,pQ,pP);
-  for(let i=0;i<aQ.length;i++){const n=UA.ORDER[i];if(n==='upper'||n==='LA'||n==='LE'||n==='RA'||n==='RE')aQ[i].slerp(pQ[i],wp)}
+  const phase=clamp(U.pu/Math.max(.01,pc.dur),0,1);
+  punchBodyPose(phase,U.cat,U.fk,pQ);
+  for(let i=0;i<aQ.length;i++){const n=UA.ORDER[i];if(n==='hip'||n==='upper'||n==='LA'||n==='LE'||n==='RA'||n==='RE')aQ[i].slerp(pQ[i],wp)}
  }
 
  /* pouso por cima: agacha e a mola devolve; correndo, afeta só o quadril/tronco */
@@ -973,14 +1005,11 @@ function hairStep(dt){
 const COMBAT_GUARD_Q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.72,0,.24));
 const COMBAT_GUARD_ELBOW_Q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.78,0,0));
 function combatBodyOverlay(){
- if(!av.visible||(SO.cur&&SO.cur.clip))return;
+ if(!av.visible||(SO.cur&&SO.cur.clip)||K.t<0)return;
  let t=0,kind=1,idx=0,active=false;
  if(K.t>=0){
   active=true;t=clamp(K.t/Math.max(.01,K.dur),0,1);
   kind=K.cur&&K.cur.kind||1;idx=K.cur&&K.cur.idx!=null?K.cur.idx:K.n;
- }else if(U.pu>=0&&UA){
-  active=true;t=clamp(U.pu/Math.max(.01,UA.clips[PUN[U.pk]].dur),0,1);
-  kind=U.cat==='m2'?2:1;idx=U.fk;
  }
  if(!active)return;
  const smooth=(a,b)=>sm((t-a)/Math.max(.001,b-a));
