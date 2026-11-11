@@ -1097,3 +1097,16 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
  .main-hub-content>.screen{padding-top:calc(env(safe-area-inset-top,0px) + 8px);gap:5px}
  .main-hub-content .list{height:min(35vh,260px)}
 }
+
+/* Pixelização configurável da interface (0–100), sem reduzir a resolução do mundo 3D. */
+.ui-pixelated .screen::after,
+.ui-pixelated .main-hub::after,
+.ui-pixelated #hud::after{
+ content:"";position:absolute;inset:0;z-index:40;pointer-events:none;opacity:var(--ui-pixel-opacity,0);
+ background-image:
+  linear-gradient(to right,rgba(0,0,0,.42) 1px,transparent 1px),
+  linear-gradient(to bottom,rgba(0,0,0,.42) 1px,transparent 1px);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px);
+ mix-blend-mode:multiply;
+}
+.ui-pixelated .screen,.ui-pixelated #hud{image-rendering:pixelated}
