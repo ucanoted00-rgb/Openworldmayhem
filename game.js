@@ -1348,6 +1348,7 @@ function playAnimByIndex(i){const anims=ld('bc.anims',[]);if(!anims[i]){toast('N
 
 /* ---------- Configurações ---------- */
 function applyAll(){
+ const uiPixel=Math.max(0,Math.min(100,Number(S.uiPixel)||0));document.documentElement.style.setProperty('--ui-pixel-cell',(2+uiPixel*.07)+'px');document.documentElement.style.setProperty('--ui-pixel-opacity',(uiPixel/100*.42).toFixed(3));document.body.classList.toggle('ui-pixelated',uiPixel>0);
  cam.fov=S.fov;
  if(anim.setQuality)anim.setQuality(S.charQ,S.cloth!==0);
  post.apply(Math.max(S.dist,3)*CS);
@@ -1375,7 +1376,7 @@ const OF=['Não','Sim'];
 slider('Sensibilidade','sens',20,200);slider('Volume da música','mvol',0,100);
 cycle('Inverter eixo Y','invert',OF);cycle('Travar mouse (lock on)','lockMouse',OF);
 /* Visuais: qualquer opção que altera câmera, imagem, iluminação, renderização ou HUD. */
-slider('Campo de visão','fov',50,110,vg);slider('Distância (chunks)','dist',2,10,vg);slider('Brilho','bright',0,100,vg);
+slider('Campo de visão','fov',50,110,vg);slider('Distância (chunks)','dist',2,10,vg);slider('Brilho','bright',0,100,vg);slider('Pixelização da interface','uiPixel',0,100,vg);
 cycle('Sombras','shadow',['Desligadas','Médias','Altas'],vg);
 cycle('Tone mapping','tone',['Nenhum','Linear','Reinhard','Cineon','ACES'],vg);
 cycle('Texturas HD','hdTex',OF,vg);
