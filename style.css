@@ -1308,6 +1308,8 @@ body.ui-crt.ui-vhs::before{
  background-blend-mode:multiply,screen,normal;
 }
 
+.visual-grid .fx-note{grid-column:1/-1;max-width:100%;text-align:left}
+
 /* Formato opcional: deixa todos os botões da interface, inclusive HUD móvel, quadrados. */
 body.ui-square-buttons button,
 body.ui-square-buttons .btn,
