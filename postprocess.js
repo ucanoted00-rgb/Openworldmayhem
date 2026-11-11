@@ -295,7 +295,8 @@ function initBloom(){
     vec3 shoulder(vec3 c){vec3 o=max(c-0.8,vec3(0.0));return min(c,vec3(0.8))+0.2*(vec3(1.0)-exp(-o/0.2));}
     vec3 toSRGB(vec3 c){return mix(pow(c,vec3(0.41666))*1.055-vec3(0.055),c*12.92,vec3(lessThanEqual(c,vec3(0.0031308))));}
     void main(){
-     vec2 uv=vUv;\n     float crtFrame=1.0;
+     vec2 uv=vUv;
+     float crtFrame=1.0;
      float gs=0.7+0.3*sin(uTime*0.8)*sin(uTime*0.31+1.0);   // rajada (0.4..1)
      if(uSand>0.001){   // rajada balança a imagem
       float sw=(vn2(vec2(vUv.y*6.0-uTime*1.3,uTime*0.5))-0.5)*0.010+(vn2(vec2(vUv.y*28.0+uTime*2.1,3.0))-0.5)*0.004;
