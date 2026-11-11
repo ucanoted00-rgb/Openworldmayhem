@@ -2985,7 +2985,7 @@ function comboTick(dt){
 }
 
 /* ---------- Loop ---------- */
-const eye=new THREE.Vector3(),fwd=new THREE.Vector3();let ma=0,fc=0,ft0=performance.now();
+const eye=new THREE.Vector3(),fwd=new THREE.Vector3();let ma=0,fc=0,ft0=performance.now(),camLean=0,camLand=0;
 function tick(dt,realDt=dt){if(DSC.active){desertCineTick(dt);post.setGround(groundH(P.p.x,P.p.z));post.update(dt);stream(P.p.x>>4,P.p.z>>4,S.dist,1);return}physics(dt);updateDashFX(dt);updateHeat(dt,realDt);updateBiome(dt);if(DSC.active){desertCineTick(dt);post.setGround(groundH(P.p.x,P.p.z));post.update(dt);stream(P.p.x>>4,P.p.z>>4,S.dist,1);return}if(OWM.cherryFog)OWM.cherryFog.update(dt,cWt,forestWt);updatePoison(dt);updateScorpions(dt);playerWake(dt);eye.set(P.p.x,P.p.y+1.62,P.p.z);const cp=Math.cos(P.pitch);fwd.set(-Math.sin(P.yaw)*cp,Math.sin(P.pitch),-Math.cos(P.yaw)*cp);comboTick(dt);hit=ray(eye,fwd,REACH);phit=rayProp(eye,fwd,REACH);if(phit&&hit&&hit.t<phit.t)phit=null;else if(phit)hit=null;
 const stg=scAim(),scFirst=stg&&(!hit||hit.terr||stg.t<hit.t+.6)&&(!phit||stg.t<phit.t+.6),wantHit=(breaking||punchT>0)&&!COIL.on;const fishTarget=wantHit?rayFish(eye,fwd):null;punchT=Math.max(0,punchT-dt);
 if(wantHit&&scFirst){scPunch(stg.s);mining=breaking;prog=0;tgtKey='';crackMesh.visible=false}
