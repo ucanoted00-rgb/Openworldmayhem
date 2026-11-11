@@ -1128,14 +1128,33 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
   conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
   linear-gradient(var(--ac),var(--ac));
 }
-.ui-pixelated .screen.solid,
-.ui-pixelated .screen.dim,
-.ui-pixelated .screen.title,
-.ui-pixelated .main-hub,
-.ui-pixelated .main-hub-nav{
+.ui-pixelated .screen.solid{
  background-image:
   conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
   radial-gradient(ellipse at 50% 0%,#232638 0%,#0e0f15 70%);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto;
+}
+.ui-pixelated .screen.dim{
+ background-image:conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px);
+}
+.ui-pixelated .screen.title{
+ background-image:
+  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
+  radial-gradient(ellipse at center,#0000 30%,#000b),
+  linear-gradient(#0000 55%,#000a);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto,auto;
+}
+.ui-pixelated .main-hub{
+ background-image:
+  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
+  radial-gradient(ellipse at 78% 8%,#262b3b 0%,#10131d 43%,#080a10 100%);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto;
+}
+.ui-pixelated .main-hub-nav{
+ background-image:
+  conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0),
+  linear-gradient(180deg,#090b12f2,#111521e8);
  background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px),auto;
 }
 .ui-pixelated .screen.title .blob{
@@ -1156,6 +1175,12 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
 .ui-pixelated .w{
  border-width:var(--ui-pixel-border,2px);
  box-shadow:var(--ui-pixel-shadow,2px) var(--ui-pixel-shadow,2px) 0 #0005;
+}
+.ui-pixelated .main-hub-close,
+.ui-pixelated .fld input,
+.ui-pixelated .w{
+ background-image:conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0);
+ background-size:var(--ui-pixel-cell,2px) var(--ui-pixel-cell,2px);
 }
 .ui-pixelated .list{
  background-image:conic-gradient(rgba(255,255,255,var(--ui-pixel-tint,0)) 25%,transparent 0 50%,rgba(255,255,255,var(--ui-pixel-tint,0)) 0 75%,transparent 0);
