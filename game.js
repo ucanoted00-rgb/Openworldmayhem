@@ -1384,6 +1384,7 @@ cycle('Ondas nos rios','wRiver',['Desligadas','Ligadas'],vg);cycle('Correnteza d
 cycle('Qualidade do personagem','charQ',['Baixa (2 mil tris)','Média (9 mil)','Alta (35 mil)'],vg);cycle('Física da roupa','cloth',['Desligada','Ligada'],vg);
 cycle('Bloom','bloom',OF,vg);cycle('Névoa volumétrica','vfog',['Desligada','Normal','Alta'],vg);cycle('Tempestade de areia','sand',['Desligada','Ligada'],vg);cycle('Fundo da tela inicial','titleBg',['Panorama','Tempestade de areia'],vg);
 cycle('Resolução','rq',['Baixa (480p)','550p','640p','Padrão (740p)','Alta (1080p)','Automática (pelo aparelho)'],vg);cycle('Detalhe das árvores','tq',['Alto','Médio','Leve'],vg);cycle('Detalhe das cerejeiras','chq',['Alto','Médio','Leve'],vg);cycle('Resolução dinâmica','dyn',OF,vg);cycle('Taxa de quadros alvo','hz',['Automática','60 Hz','90 Hz','120 Hz'],vg);cycle('Suavização de bordas (FXAA)','aa',OF,vg);cycle('Texto "Coletar"','collect',['Invisível','Visível'],vg);cycle('Mostrar FPS','fps',OF,vg);cycle('Balanço da câmera','bob',OF,vg);cycle('Vinheta','vig',OF,vg);cycle('Câmera','camMode',['1ª pessoa','3ª pessoa'],vg);
+E('div','dsc fx-note','Pixelização, VHS e CRT também afetam o mundo 3D e o panorama da tela inicial.',vg);
 E('div','dsc np','Chill Synthwave - Digital Sunset — Karl Casey @ White Bat Audio',SS);
 const srow=E('div','srow',null,SS);
 B('Restaurar padrão',()=>{Object.assign(S,DEF);st('bc.s',S);applyAll();location.reload()},srow);
