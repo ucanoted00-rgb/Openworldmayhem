@@ -1207,3 +1207,66 @@ body.owm-desert-cine-active #vig{opacity:0!important;visibility:hidden!important
  .ui-vhs .screen p,.ui-vhs .screen label,.ui-vhs .main-hub-item span,
  .ui-vhs #hud span,.ui-vhs #hud p{animation:none}
 }
+
+
+/* CRT ajustável somente na interface: botões, navegação e tipografia.
+   Não aplica filtro ao canvas, cenário 3D, fundos ou painéis inteiros. */
+.ui-crt .btn,
+.ui-crt .main-hub-item{
+ border-color:rgba(135,235,180,calc(.22 + var(--ui-crt-strength,0)*.55));
+ box-shadow:
+  0 4px 0 #000a,
+  0 0 calc(var(--ui-crt-strength,0)*10px) rgba(95,255,165,calc(var(--ui-crt-strength,0)*.28)),
+  inset 0 1px 0 rgba(220,255,230,.18),
+  inset 0 -2px 0 rgba(0,0,0,.28);
+}
+.ui-crt .btn::after,
+.ui-crt .main-hub-item::after{
+ content:"";
+ position:absolute;
+ inset:0;
+ z-index:2;
+ border-radius:inherit;
+ pointer-events:none;
+ opacity:calc(var(--ui-crt-strength,0)*.58);
+ background:
+  repeating-linear-gradient(180deg,rgba(170,255,205,.2) 0 1px,transparent 1px var(--ui-crt-scan,3px)),
+  linear-gradient(180deg,rgba(255,255,255,.12),transparent 38%,rgba(0,0,0,.16));
+}
+.ui-crt .btn,
+.ui-crt .screen h1,
+.ui-crt .screen h2,
+.ui-crt .screen h3,
+.ui-crt .screen p,
+.ui-crt .screen label,
+.ui-crt .screen .title,
+.ui-crt .main-hub-item span,
+.ui-crt #hud span,
+.ui-crt #hud p{
+ text-shadow:
+  0 0 calc(var(--ui-crt-strength,0)*5px) rgba(145,255,190,calc(var(--ui-crt-strength,0)*.8)),
+  calc(var(--ui-crt-strength,0)*.45px) 0 rgba(180,255,220,calc(var(--ui-crt-strength,0)*.55)),
+  calc(var(--ui-crt-strength,0)*-.35px) 0 rgba(110,210,255,calc(var(--ui-crt-strength,0)*.38));
+}
+.ui-crt .main-hub-item{overflow:hidden}
+@keyframes uiCrtFlicker{
+  0%,97%,100%{opacity:1}
+  98%{opacity:.96}
+  99%{opacity:.985}
+}
+.ui-crt .btn,
+.ui-crt .screen h1,
+.ui-crt .screen h2,
+.ui-crt .screen h3,
+.ui-crt .screen p,
+.ui-crt .screen label,
+.ui-crt .main-hub-item span,
+.ui-crt #hud span,
+.ui-crt #hud p{
+ animation:uiCrtFlicker 7s steps(1,end) infinite;
+}
+@media(prefers-reduced-motion:reduce){
+ .ui-crt .btn,.ui-crt .screen h1,.ui-crt .screen h2,.ui-crt .screen h3,
+ .ui-crt .screen p,.ui-crt .screen label,.ui-crt .main-hub-item span,
+ .ui-crt #hud span,.ui-crt #hud p{animation:none}
+}
