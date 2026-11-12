@@ -1297,7 +1297,7 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
   const ks=Math.min(1,s.sprint&&sp>4?1:0);K.sp+=(ks-K.sp)*(1-Math.exp(-dt*8));
   let v,dr;
   if(K.w>.02){v=K.t>=0?crN(SW.v,u):GUARD;dr=1-sm(K.dr/.4)}
-  else{v=GUARD;if(U.pu>=0&&pc&&OWM.punchClips.sample(U.cat,U.pu,null,null,FPPOSE))v=FPPOSE.slice();dr=0}
+  else{v=GUARD;const fpClip=punchClip(U.cat);if(U.pu>=0&&fpClip&&OWM.punchClips.sample(U.cat,U.pu,null,null,FPPOSE))v=FPPOSE.slice();dr=0}
   if(SO.fpL.length){for(const e of SO.fpL){const a=v,w=e.w;v=[a[0]+(e.v[0]-a[0])*w,a[1]+(e.v[1]-a[1])*w,a[2]+(e.v[2]-a[2])*w,a[3]+(e.v[3]-a[3])*w,a[4]+(e.v[4]-a[4])*w,a[5]+(e.v[5]-a[5])*w]}dr*=1-SO.fw}   // mão do Estúdio de Animação
   const hw=Math.tan(cam.fov*Math.PI/360)*cam.aspect*.44*.62,xs=Math.min(1,hw/.21),d=dr,br=Math.sin(ST.idleT*1.8);
   let x=v[0]*xs,y=v[1]+br*.004+Math.abs(Math.sin(ST.ph))*.012*A-K.sp*.05+ST.sq.x*.25-d*.35,z=v[2]-K.sp*.02;
