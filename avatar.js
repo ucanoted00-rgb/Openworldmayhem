@@ -1218,7 +1218,7 @@ const KMAP=[5,6,7,3,4];   // idx semântico do combo (M1a,M1b,M2 abertura,M2 ap�
 const K={w:0,t:-1,n:2,hit:false,strike:false,pend:false,dr:9,was:false,sp:0,rc:null,cur:null,sinfo:null,ts:1,cat:'lmb',oc:null,dur:.44,hf:.4};   // rc = golpe de combo (M1/M2) na fila; cur = o que está em andamento; ts = velocidade do golpe
 /* Soco sem arma em 1ª pessoa: o mesmo braço da faca (sem a faca), que entra durante o soco e sai logo depois. Trilhas [u, x,y,z, rx,ry,rz] no espaço da câmera,
    mesmo formato das da faca (v de KSW). 0 = jab (reto), 1 = cruzado (vem de fora pro centro). Ritmo = o do clipe punch1/punch2 (U.pu). */
-const GUARD=[.21,-.22,-.44,0,0,0],FPPOSE=[.21,-.22,-.44,0,0,0];
+const GUARD=[.21,-.22,-.44,0,0,0],FPPOSE=[.21,-.22,-.44,0,0,0],FP_BLEND={w:0};
 const kBasis=(o,ex,ey,ez)=>o.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(...ex),new THREE.Vector3(...ey),new THREE.Vector3(...ez)));
 /* 3ª pessoa: faca presa ao antebraço direito (RE), cabo na palma, lâmina na direção do antebraço, levemente pra cima */
 const GRIP=GK?[.015,-.165,0]:[-.085,-.27,0];   // onde a arma fica em relação ao osso do cotovelo (RE): palma da mão do Goku (mão mais alta/curta que a do modelo antigo)
@@ -1297,7 +1297,7 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
   const ks=Math.min(1,s.sprint&&sp>4?1:0);K.sp+=(ks-K.sp)*(1-Math.exp(-dt*8));
   let v,dr;
   if(K.w>.02){v=K.t>=0?crN(SW.v,u):GUARD;dr=1-sm(K.dr/.4)}
-  else{v=GUARD;const fpClip=punchClip(U.cat);if(U.pu>=0&&fpClip&&OWM.punchClips.sample(U.cat,U.pu,null,null,FPPOSE))v=FPPOSE.slice();dr=0}
+  else{const fpClip=punchClip(U.cat),playing=U.pu>=0&&!!fpClip;FP_BLEND.w+=( (playing?1:0)-FP_BLEND.w )*(1-Math.exp(-dt*(playing?18:9)));v=GUARD.slice();if(fpClip&&(playing||FP_BLEND.w>.003)&&OWM.punchClips.sample(U.cat,playing?U.pu:fpClip.dur,null,null,FPPOSE)){for(let i=0;i<6;i++)v[i]+=(FPPOSE[i]-v[i])*FP_BLEND.w}dr=0}
   if(SO.fpL.length){for(const e of SO.fpL){const a=v,w=e.w;v=[a[0]+(e.v[0]-a[0])*w,a[1]+(e.v[1]-a[1])*w,a[2]+(e.v[2]-a[2])*w,a[3]+(e.v[3]-a[3])*w,a[4]+(e.v[4]-a[4])*w,a[5]+(e.v[5]-a[5])*w]}dr*=1-SO.fw}   // mão do Estúdio de Animação
   const hw=Math.tan(cam.fov*Math.PI/360)*cam.aspect*.44*.62,xs=Math.min(1,hw/.21),d=dr,br=Math.sin(ST.idleT*1.8);
   let x=v[0]*xs,y=v[1]+br*.004+Math.abs(Math.sin(ST.ph))*.012*A-K.sp*.05+ST.sq.x*.25-d*.35,z=v[2]-K.sp*.02;
