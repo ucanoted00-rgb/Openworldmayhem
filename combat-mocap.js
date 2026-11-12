@@ -25,9 +25,10 @@
  function sampleHand(frame){const c=active.clip,a=Math.floor(frame),b=Math.min(a+1,c.count-1),u=frame-a,o0=a*3,o1=b*3;
   HAND.set(c.hand[o0]/10000+(c.hand[o1]/10000-c.hand[o0]/10000)*u,c.hand[o0+1]/10000+(c.hand[o1+1]/10000-c.hand[o0+1]/10000)*u,c.hand[o0+2]/10000+(c.hand[o1+2]/10000-c.hand[o0+2]/10000)*u)
  }
- function sampleWrist(frame){const c=active.clip,a=Math.floor(frame),b=Math.min(a+1,c.count-1),u=frame-a;
-  const read=(f,out)=>{const o=f*4;return out.set(c.wrist[o]/32767,c.wrist[o+1]/32767,c.wrist[o+2]/32767,c.wrist[o+3]/32767).normalize()};
-  read(a,WRIST);if(b!==a){read(b,TARGET);WRIST.slerp(TARGET,u)}
+ function sampleWrist(frame){const c=active.clip,a=Math.floor(frame),b=Math.min(a+1,c.count-1),u=frame-a,o0=a*3,o1=b*3;
+  const lerpAngle=(x,y,t)=>x+Math.atan2(Math.sin(y-x),Math.cos(y-x))*t;
+  EULER.set(lerpAngle(c.wrist[o0]/32767,c.wrist[o1]/32767,u),lerpAngle(c.wrist[o0+1]/32767,c.wrist[o1+1]/32767,u),lerpAngle(c.wrist[o0+2]/32767,c.wrist[o1+2]/32767,u),'XYZ');
+  WRIST.setFromEuler(EULER);
  }
  function play(name){const clip=clips[name];if(!clip)return false;
   if(active&&active.name===name&&active.time<active.clip.duration*.48)return true;
