@@ -2910,6 +2910,7 @@ const CF_GEO=new THREE.BoxGeometry(.05,.05,.05),CF_GEO2=new THREE.BoxGeometry(.0
 function comboArmed(){return !!(OWM.weapon.id&&WPS[OWM.weapon.id])}
 const mocapBaseUpdate=anim.update;
 anim.update=function(dt,s){
+ if(!s||!s.inGame){if(OWM.combatMocap){OWM.combatMocap.stop();OWM.combatMocap.setLmb(false,0)}}
  if(s&&s.attack&&!OWM.weapon.id&&!s.coil&&!s.custom)s=Object.assign({},s,{attack:false});
  return mocapBaseUpdate.call(anim,dt,s);
 };
@@ -2931,7 +2932,7 @@ function comboPress(kind,fromBuffer=false){
  // Pequeno avanço na direção do golpe: M2 compromete um pouco mais que M1.
  const fx=-Math.sin(P.yaw),fz=-Math.cos(P.yaw),lunge=kind===1?.72:1.08;
  P.vel.x+=fx*lunge;P.vel.z+=fz*lunge;
- if(!armed)CMB.fist={kind,step,idx,t:(anim.studioHit&&anim.studioHit(kind===1?'m1':'m2'))||(kind===1?.15:.24)};
+ if(!armed)CMB.fist={kind,step,idx,t:(anim.studioHit&&anim.studioHit(kind===1?'m1':'m2'))||(OWM.combatMocap&&OWM.combatMocap.hitTime(kind===1?'m1':'m2'))||(kind===1?.15:.24)};
  comboUi(step+1,kind,fin);return true;
 }
 function comboDamage(kind){
