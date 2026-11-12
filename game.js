@@ -2906,7 +2906,18 @@ function unstuck(){if(!hits(P.p.x,P.p.y,P.p.z))return;for(let r=1;r<=8;r++)for(l
    Com faca o dano cai no instante do corte da animação; sem arma, jab (M1) e cruzado (M2) com um pequeno atraso. */
 const CMB={n:0,prev:0,t:0,fist:null,ut:0,queue:null,hitStop:0};
 const CF_GEO=new THREE.BoxGeometry(.05,.05,.05),CF_GEO2=new THREE.BoxGeometry(.09,.09,.09);
+
 function comboArmed(){return !!(OWM.weapon.id&&WPS[OWM.weapon.id])}
+const mocapBaseUpdate=anim.update;
+anim.update=function(dt,s){
+ if(s&&s.attack&&!OWM.weapon.id&&!s.coil&&!s.custom)s=Object.assign({},s,{attack:false});
+ return mocapBaseUpdate.call(anim,dt,s);
+};
+const mocapBaseCombo=anim.combo;
+anim.combo=function(kind,idx,armed,step){
+ if(!armed&&OWM.combatMocap&&OWM.combatMocap.play(kind===1?'m1':'m2'))return true;
+ return mocapBaseCombo.call(anim,kind,idx,armed,step);
+};
 function comboPress(kind,fromBuffer=false){
  if(state!=='play'||COIL.on||tablePlacement||!anim.combo)return false;
  const armed=comboArmed(),chain=CMB.t>0,step=chain?CMB.n+1:0,prev=chain?CMB.prev:0;
@@ -2923,10 +2934,16 @@ function comboPress(kind,fromBuffer=false){
  if(!armed)CMB.fist={kind,step,idx,t:(anim.studioHit&&anim.studioHit(kind===1?'m1':'m2'))||(kind===1?.15:.24)};
  comboUi(step+1,kind,fin);return true;
 }
+function comboDamage(kind){
+ const id=OWM.weapon.id;
+ if(id==='knife_intermediate')return kind===1?15:22;
+ if(id==='knife'||id==='stone_knife')return kind===1?24:28;
+ return kind===1?6:8;
+}
 function comboUi(count,kind,fin){
  const el=$('#combo-ui');if(!el)return;
  el.className='';void el.offsetWidth;
- el.textContent=fin?'FINISHER!':(count>1?'COMBO x'+count:(kind===1?'M1':'M2'))+'\n'+(kind===1?'6':'8')+' dano';
+ el.textContent=fin?'FINISHER!':(count>1?'COMBO x'+count:(kind===1?'M1':'M2'))+'\n'+comboDamage(kind)+' dano';
  el.className='on'+(kind===2?' hv':'')+(fin?' fin':'');
  clearTimeout(CMB.ut);CMB.ut=setTimeout(()=>el.classList.remove('on'),fin?1300:1100);
 }
@@ -2966,7 +2983,7 @@ function spawnComboFx(pos,kind,idx,fin,landed){
  if(fin){for(let i=0;i<14;i++){const a=i/14*Math.PI*2;add(mats[1],CF_GEO2,o.x,Math.max(o.y-.3,eye.y-1.4),o.z,Math.cos(a)*7,.8,Math.sin(a)*7,.5,6)}}   // onda de choque do finisher
 }
 function comboHit(kind,step,idx){
- const fin=kind===2&&step>=3,dmg=(kind===1?6:8)*archetypeMul('punchDamage');
+ const fin=kind===2&&step>=3,dmg=comboDamage(kind)*archetypeMul('punchDamage');
  const stg=scAim();let pos=null;
  if(stg){scHurt(stg.s,dmg,fin?7.2:(kind===2?5.2:3.8));pos={x:stg.s.x,y:stg.s.y+.45,z:stg.s.z}}
  else{const ft=rayFish(eye,fwd);if(ft&&ft.f){fishHurt(ft.f,dmg);const fp=ft.f.group.position;pos={x:fp.x,y:fp.y,z:fp.z}}}
@@ -2992,7 +3009,7 @@ if(wantHit&&scFirst){scPunch(stg.s);mining=breaking;prog=0;tgtKey='';crackMesh.v
 else if(wantHit&&fishTarget&&(!hit||hit.terr||fishTarget.t<hit.t)&&(!phit||fishTarget.t<phit.t)){fishPunch(fishTarget.f);mining=false;prog=0;tgtKey='';crackMesh.visible=false}
 else if(breaking&&phit&&isTreeK(phit.c.k)){mining=true;prog=0;tgtKey='';crackMesh.visible=false;treeTry(phit.c)}
 else if(breaking&&phit){const c=phit.c,key='p'+c.cx+','+c.cz+','+c.id;if(key!==tgtKey){tgtKey=key;prog=0}prog+=dt;mining=true;const stage=Math.min(9,Math.floor(prog/c.hard*10)),ch=Math.min(c.hy,2.2);crackMesh.visible=true;crackMesh.scale.set(c.hx*2+.06,ch,c.hz*2+.06);crackMesh.position.set(c.x,c.y0+ch/2,c.z);if(crackMat.map!==crackTextures[stage]){crackMat.map=crackTextures[stage];crackMat.needsUpdate=true}if(prog>=c.hard){breakProp(c);prog=0;tgtKey='';crackMesh.visible=false}}
-else if(breaking&&hit&&!hit.terr&&hit.y>0){const key=hit.x+','+hit.y+','+hit.z;if(key!==tgtKey){tgtKey=key;prog=0}prog+=dt;mining=true;const hard=BL[getB(hit.x,hit.y,hit.z)].h;const stage=Math.min(9,Math.floor((prog/hard)*10));crackMesh.visible=true;crackMesh.scale.set(1,1,1);crackMesh.position.set(hit.x+.5,hit.y+.5,hit.z+.5);if(crackMat.map!==crackTextures[stage]){crackMat.map=crackTextures[stage];crackMat.needsUpdate=true}if(prog>=hard){breakAt(hit);prog=0;tgtKey=''}}else{mining=false;prog=0;tgtKey='';crackMesh.visible=false}if(mining)swT+=dt*12;const sp=Math.hypot(P.vel.x,P.vel.z);bobT+=sp*dt*1.7;const bobA=S.bob&&P.og?Math.min(1,sp/4.8)*(isSprint?1.3:1):0,bobY=Math.sin(bobT*2)*.02*bobA;const lateral=P.vel.x*Math.cos(P.yaw)-P.vel.z*Math.sin(P.yaw);camLean+=(cl(-lateral*.006,-.045,.045)-camLean)*(1-Math.exp(-dt*9));if(P.landV>1)camLand=Math.max(camLand,cl(P.landV*.0035,0,.105));camLand*=Math.exp(-dt*12);if(playingAnim){animTime+=dt;if(animTime>playingAnim.duration){playingAnim=null;animTime=0}}if(tp3){const shoulder=S.shiftLock ? .68 : 0,sx=Math.cos(P.yaw)*shoulder,sz=-Math.sin(P.yaw)*shoulder;let t=0;while(t<(S.shiftLock?4.15:3.5)){const q=t+.25,x=eye.x-fwd.x*q+sx,y=eye.y-fwd.y*q,z=eye.z-fwd.z*q+sz;if(getB(Math.floor(x),Math.floor(y),Math.floor(z))||y<groundH(x,z)+.15)break;t=q}cam.position.set(eye.x-fwd.x*t+sx,eye.y-fwd.y*t+bobY-camLand,eye.z-fwd.z*t+sz);}else{cam.position.copy(eye);cam.position.y+=anim.fx.dip+bobY-camLand;cam.position.x+=Math.cos(bobT)*.008*bobA}cam.rotation.set(P.pitch,P.yaw,(tp3?camLean*.7:anim.fx.roll+camLean));const targetFov=S.fov+cl((sp-4.8)*2.4,0,8)+(dashT>0?2.5:0);cam.fov+=(targetFov-cam.fov)*(1-Math.exp(-dt*8));cam.updateProjectionMatrix();updateTablePlacement();if(COIL.on){const ct=performance.now()*.001;cam.position.x+=Math.sin(ct*31)*COIL.SHAKE;cam.position.y+=Math.cos(ct*23)*COIL.SHAKE*.62;cam.rotation.z+=Math.sin(ct*27)*.006;}updateCamShake(dt);try{anim.update(dt,{inGame:true,attack:breaking||punchT>0,sprint:isSprint,tp3,p:P.p,vel:P.vel,og:P.og,mining,swT,cp:P.pitch,landV:P.landV,coil:COIL.on,dash:dashT>0?1-dashT/DASH.DURATION:-1,custom:playingAnim?{anim:playingAnim,time:animTime}:null});}catch(e){const em=String(e&&e.message||e);if((tick.ae=tick.ae||{})[em]===undefined&&Object.keys(tick.ae).length<4){tick.ae[em]=1;console.error('[OWM] anim.update: '+em+' | '+String(e&&e.stack||'').split('\n').slice(0,4).join(' <- '))}}P.landV=0;updateParticles(dt);updateTrees(dt);OWM.leaves.update(dt);updateLeafDrops(dt);updateAppleDrops(dt);updateFish(dt);updatePlacedTables(dt);updateBenchPrompt();{const dzn=sstep(.18,.55,desertW(P.p.x,P.p.z));OWM.sand.update(dt,dzn);if(OWM.wind)OWM.wind.update(dt,dzn,waterSurf(P.p.x,P.p.z)>P.p.y+1.55)}post.setGround(groundH(P.p.x,P.p.z));post.update(dt);updateWater(dt);if((saveT+=dt)>20){saveT=0;saveWorld()}updateCollect(dt);stream(P.p.x>>4,P.p.z>>4,S.dist,2);}
+else if(breaking&&hit&&!hit.terr&&hit.y>0){const key=hit.x+','+hit.y+','+hit.z;if(key!==tgtKey){tgtKey=key;prog=0}prog+=dt;mining=true;const hard=BL[getB(hit.x,hit.y,hit.z)].h;const stage=Math.min(9,Math.floor((prog/hard)*10));crackMesh.visible=true;crackMesh.scale.set(1,1,1);crackMesh.position.set(hit.x+.5,hit.y+.5,hit.z+.5);if(crackMat.map!==crackTextures[stage]){crackMat.map=crackTextures[stage];crackMat.needsUpdate=true}if(prog>=hard){breakAt(hit);prog=0;tgtKey=''}}else{mining=false;prog=0;tgtKey='';crackMesh.visible=false}if(mining)swT+=dt*12;const sp=Math.hypot(P.vel.x,P.vel.z);bobT+=sp*dt*1.7;const bobA=S.bob&&P.og?Math.min(1,sp/4.8)*(isSprint?1.3:1):0,bobY=Math.sin(bobT*2)*.02*bobA;const lateral=P.vel.x*Math.cos(P.yaw)-P.vel.z*Math.sin(P.yaw);camLean+=(cl(-lateral*.006,-.045,.045)-camLean)*(1-Math.exp(-dt*9));if(P.landV>1)camLand=Math.max(camLand,cl(P.landV*.0035,0,.105));camLand*=Math.exp(-dt*12);if(playingAnim){animTime+=dt;if(animTime>playingAnim.duration){playingAnim=null;animTime=0}}if(tp3){const shoulder=S.shiftLock ? .68 : 0,sx=Math.cos(P.yaw)*shoulder,sz=-Math.sin(P.yaw)*shoulder;let t=0;while(t<(S.shiftLock?4.15:3.5)){const q=t+.25,x=eye.x-fwd.x*q+sx,y=eye.y-fwd.y*q,z=eye.z-fwd.z*q+sz;if(getB(Math.floor(x),Math.floor(y),Math.floor(z))||y<groundH(x,z)+.15)break;t=q}cam.position.set(eye.x-fwd.x*t+sx,eye.y-fwd.y*t+bobY-camLand,eye.z-fwd.z*t+sz);}else{cam.position.copy(eye);cam.position.y+=anim.fx.dip+bobY-camLand;cam.position.x+=Math.cos(bobT)*.008*bobA}cam.rotation.set(P.pitch,P.yaw,(tp3?camLean*.7:anim.fx.roll+camLean));const targetFov=S.fov+cl((sp-4.8)*2.4,0,8)+(dashT>0?2.5:0);cam.fov+=(targetFov-cam.fov)*(1-Math.exp(-dt*8));cam.updateProjectionMatrix();updateTablePlacement();if(COIL.on){const ct=performance.now()*.001;cam.position.x+=Math.sin(ct*31)*COIL.SHAKE;cam.position.y+=Math.cos(ct*23)*COIL.SHAKE*.62;cam.rotation.z+=Math.sin(ct*27)*.006;}updateCamShake(dt);if(OWM.combatMocap)OWM.combatMocap.setLmb(!OWM.weapon.id&&!COIL.on&&!playingAnim&&(breaking||punchT>0),dt);try{anim.update(dt,{inGame:true,attack:breaking||punchT>0,sprint:isSprint,tp3,p:P.p,vel:P.vel,og:P.og,mining,swT,cp:P.pitch,landV:P.landV,coil:COIL.on,dash:dashT>0?1-dashT/DASH.DURATION:-1,custom:playingAnim?{anim:playingAnim,time:animTime}:null});}catch(e){const em=String(e&&e.message||e);if((tick.ae=tick.ae||{})[em]===undefined&&Object.keys(tick.ae).length<4){tick.ae[em]=1;console.error('[OWM] anim.update: '+em+' | '+String(e&&e.stack||'').split('\n').slice(0,4).join(' <- '))}}try{if(OWM.combatMocap)OWM.combatMocap.update(dt,{inGame:true,tp3})}catch(e){console.warn('[OWM] combat mocap:',e)}P.landV=0;updateParticles(dt);updateTrees(dt);OWM.leaves.update(dt);updateLeafDrops(dt);updateAppleDrops(dt);updateFish(dt);updatePlacedTables(dt);updateBenchPrompt();{const dzn=sstep(.18,.55,desertW(P.p.x,P.p.z));OWM.sand.update(dt,dzn);if(OWM.wind)OWM.wind.update(dt,dzn,waterSurf(P.p.x,P.p.z)>P.p.y+1.55)}post.setGround(groundH(P.p.x,P.p.z));post.update(dt);updateWater(dt);if((saveT+=dt)>20){saveT=0;saveWorld()}updateCollect(dt);stream(P.p.x>>4,P.p.z>>4,S.dist,2);}
 
 let last=performance.now();
 addEventListener('visibilitychange',()=>{last=performance.now()});
