@@ -873,6 +873,10 @@ function ualLayer(dt,x){
  if(sum===0){ualSamp(C.idle,U.t.idle,aQ,aP)}
 
  if(wp>.003&&pc&&OWM.punchClips.sample(U.cat,U.pu,pQ,pP)){
+  /* Os GLBs dos golpes vêm de outro rig: aplicar a mesma correção de bind-pose e os limites
+     anatômicos usados nos clipes de locomoção antes de misturar, senão braços/cotovelos
+     recebem rotações absolutas do rig de origem e deformam o avatar. */
+  cleanClipPose(pQ);
   /* Socos afetam tronco e braços; pernas e posição do quadril preservam a locomoção original. */
   for(let i=0;i<aQ.length;i++){
    const n=UA.ORDER[i];
