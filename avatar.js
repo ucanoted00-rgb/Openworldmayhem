@@ -810,6 +810,8 @@ function cleanClipPose(qs,isDelta){
      já são deltas (frame 0 = identidade): subtrair UAREF de novo deformava tronco e braços. */
   if(!isDelta)qs[i].premultiply(UAREF[i]);
   qs[i].normalize();
+  /* Golpes já estão no rig do avatar: não aplicar os limites próprios da UAL. */
+  if(isDelta)continue;
   if(!b)continue;
   _ea.setFromQuaternion(qs[i],'XYZ');
   _ea.x=clamp(_ea.x,b[0][0],b[0][1]);
