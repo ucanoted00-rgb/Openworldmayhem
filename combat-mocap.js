@@ -57,6 +57,6 @@
   }
   if(active&&active.time>=c.duration)active=null;
  }
- OWM.combatMocap={play,stop,update,setLmb,get active(){return active?active.name:null}};
+ OWM.combatMocap={play,stop,update,setLmb,hitTime:name=>name==='m1'?.233333:name==='m2'?.266667:.233333,get active(){return active?active.name:null}};
  console.info('[OWM] Animações de combate retargetadas: LMB, M1 e M2.');
 })();
