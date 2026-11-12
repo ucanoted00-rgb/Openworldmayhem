@@ -873,9 +873,11 @@ function ualLayer(dt,x){
  if(sum===0){ualSamp(C.idle,U.t.idle,aQ,aP)}
 
  if(wp>.003&&pc&&OWM.punchClips.sample(U.cat,U.pu,pQ,pP)){
-  /* O clip importado conduz os 11 ossos do rig, sem substituir o deslocamento normal por código procedural. */
-  for(let i=0;i<aQ.length;i++)aQ[i].slerp(pQ[i],wp);
-  aP.addScaledVector(pP,wp);
+  /* Socos afetam tronco e braços; pernas e posição do quadril preservam a locomoção original. */
+  for(let i=0;i<aQ.length;i++){
+   const n=UA.ORDER[i];
+   if(n==='hip'||n==='upper'||n==='LA'||n==='LE'||n==='RA'||n==='RE')aQ[i].slerp(pQ[i],wp);
+  }
  }
 
  /* pouso por cima: agacha e a mola devolve; correndo, afeta só o quadril/tronco */
@@ -1011,7 +1013,7 @@ function update(dt,s){
  ST.yr+=(clamp(wrap(camYaw-ST.pcy)/dt,-9,9)-ST.yr)*(1-Math.exp(-dt*10));ST.pcy=camYaw;   // velocidade de giro da câmera (suavizada)
  /* o corpo NÃO gira com a câmera: só vira quando o personagem anda, olhando pra onde ele vai; parado, fica como está (a cabeça acompanha a câmera) */
  /* Soco sem arma: o game.js manda attack=true (botão esquerdo / "Socar", segurando repete). Antes ninguém chamava punch(), então só a faca animava. */
- if(s.attack&&!coil&&!custom&&!OWM.weapon.id)punch();
+ if(s.attack&&U.pu<0&&!coil&&!custom&&!OWM.weapon.id)punch();
  const clipOn=!!UA&&!custom&&!(idle&&og&&!moving&&!mining&&U.pu<0);   // soco em andamento: os clipes entram mesmo parado com o "Idle" salvo
  if(moving)ST.yaw+=wrap(Math.atan2(-vel.x,-vel.z)-ST.yaw)*(1-Math.exp(-dt*14));
  av.rotation.y=ST.yaw+Math.PI;                       // modelo olha pra +Z; jogo olha pra -Z em yaw 0
