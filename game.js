@@ -2923,10 +2923,16 @@ function comboPress(kind,fromBuffer=false){
  if(!armed)CMB.fist={kind,step,idx,t:(anim.studioHit&&anim.studioHit(kind===1?'m1':'m2'))||(kind===1?.15:.24)};
  comboUi(step+1,kind,fin);return true;
 }
+function comboDamage(kind){
+ const id=OWM.weapon&&OWM.weapon.id;
+ const base=id==='knife_intermediate'?(kind===1?15:22):
+  (id==='knife'||id==='stone_knife')?(kind===1?24:28):(kind===1?6:8);
+ return base*archetypeMul('punchDamage');
+}
 function comboUi(count,kind,fin){
  const el=$('#combo-ui');if(!el)return;
  el.className='';void el.offsetWidth;
- el.textContent=fin?'FINISHER!':(count>1?'COMBO x'+count:(kind===1?'M1':'M2'))+'\n'+(kind===1?'6':'8')+' dano';
+ el.textContent=fin?'FINISHER!':(count>1?'COMBO x'+count:(kind===1?'M1':'M2'))+'\n'+Math.round(comboDamage(kind))+' dano';
  el.className='on'+(kind===2?' hv':'')+(fin?' fin':'');
  clearTimeout(CMB.ut);CMB.ut=setTimeout(()=>el.classList.remove('on'),fin?1300:1100);
 }
@@ -2966,7 +2972,7 @@ function spawnComboFx(pos,kind,idx,fin,landed){
  if(fin){for(let i=0;i<14;i++){const a=i/14*Math.PI*2;add(mats[1],CF_GEO2,o.x,Math.max(o.y-.3,eye.y-1.4),o.z,Math.cos(a)*7,.8,Math.sin(a)*7,.5,6)}}   // onda de choque do finisher
 }
 function comboHit(kind,step,idx){
- const fin=kind===2&&step>=3,dmg=(kind===1?6:8)*archetypeMul('punchDamage');
+ const fin=kind===2&&step>=3,dmg=comboDamage(kind);
  const stg=scAim();let pos=null;
  if(stg){scHurt(stg.s,dmg,fin?7.2:(kind===2?5.2:3.8));pos={x:stg.s.x,y:stg.s.y+.45,z:stg.s.z}}
  else{const ft=rayFish(eye,fwd);if(ft&&ft.f){fishHurt(ft.f,dmg);const fp=ft.f.group.position;pos={x:fp.x,y:fp.y,z:fp.z}}}
