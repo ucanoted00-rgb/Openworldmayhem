@@ -815,10 +815,10 @@ function cleanClipPose(qs){
   qs[i].setFromEuler(_ea).normalize();
  }
 }
-/* LMB: alterna jab (punch1) e cruzado (punch2); só tronco e braços, as pernas seguem a locomoção */
-const PSPD=1.2,PUN=['punch1','punch2'];
-function punch(){if(OWM.weapon.id&&OWM.weapons&&OWM.weapons[OWM.weapon.id]){K.pend=true;return true}if(!UA||!UA.clips.punch1)return false;if(U.pu>=0&&U.pu<UA.clips[PUN[U.pk]].dur*.5)return false;U.pk^=1;U.fk=U.pk;U.cat='lmb';U.ps=punchPs('lmb');U.pu=0;return true}
-function punchPs(cat){const oc=studioClip(cat),pd=UA.clips[PUN[U.pk]].dur;return oc?pd*oc.speed/studioTotal(oc):(cat==='lmb'?PSPD:cat==='m1'?1.5:.95)}   // com clipe do estúdio, o soco dura exatamente a duração do clipe
+/* Golpes importados dos GLBs: LMB = cruzado, M1 = jab esquerdo, M2 = gancho direito. */
+function punchClip(cat){return OWM.punchClips&&OWM.punchClips.clips[cat]||null}
+function punch(){if(OWM.weapon.id&&OWM.weapons&&OWM.weapons[OWM.weapon.id]){K.pend=true;return true}const c=punchClip('lmb');if(!c)return false;const active=punchClip(U.cat);if(U.pu>=0&&active&&U.pu<active.dur*.5)return false;U.cat='lmb';U.ps=punchPs('lmb');U.pu=0;return true}
+function punchPs(cat){const oc=studioClip(cat),c=punchClip(cat),pd=c?c.dur:.5;return oc?pd*oc.speed/studioTotal(oc):1}
 function ualSamp(c,t,oQ,oP){
  const n=c.n;let f;
  if(c.loop){t=((t%c.dur)+c.dur)%c.dur;f=t/c.dur*n}else{t=clamp(t,0,c.dur);f=t/c.dur*(n-1)}
@@ -830,37 +830,7 @@ function ualSamp(c,t,oQ,oP){
  for(let k=0;k<oQ.length;k++){const o=3+k*4;_q1.set(F[a+o],F[a+o+1],F[a+o+2],F[a+o+3]);_q2.set(F[b+o],F[b+o+1],F[b+o+2],F[b+o+3]);oQ[k].copy(_q1).slerp(_q2,u)}
  cleanClipPose(oQ);
 }
-/* Socos próprios do rig do OWM. Substituem os clipes corporais genéricos do pack base:
-   preparação curta, tronco/quadril antes do braço, guarda da mão oposta e recuperação com inércia. */
-const PUNCH_BONE_INDEX=Object.fromEntries(UA.ORDER.map((n,i)=>[n,i]));
-function punchBodyPose(t,cat,fk,out){
- const smooth=(a,b)=>sm((t-a)/Math.max(.001,b-a));
- const prep=smooth(0,.18)*(1-smooth(.13,.32));
- const drive=smooth(.12,.29)*(1-smooth(.34,.53));
- const follow=smooth(.3,.5)*(1-smooth(.72,.94));
- const heavy=cat==='m2'?1:0;
- const hook=fk===1||fk===3;
- const overhand=heavy&&fk===5;
- const uppercut=heavy&&fk===6;
- const side=(hook||overhand)?-1:1;
- const power=heavy?1.12:1;
- const torsoYaw=side*(.055*prep+(.16+.035*heavy)*drive+.055*follow);
- const put=(name,x,y,z)=>{const i=PUNCH_BONE_INDEX[name];if(i!==undefined)out[i].setFromEuler(_ea.set(x,y,z))};
- // Quadril contrapõe o tronco; cabeça e braço não começam no mesmo instante.
- put('hip',-.018*drive,-torsoYaw*.46,-side*.012*drive);
- put('upper',.025*prep+(.105+.035*heavy)*drive+.035*follow,torsoYaw,side*.018*drive);
- // Ombro direito: recolhe, acelera e passa um pouco do ponto de contato.
- let shoulderX=.12*prep-(.88+.16*heavy)*drive+.12*follow;
- let shoulderY=side*(.025*prep+.12*drive);
- let shoulderZ=side*(hook?.42:overhand?.3:uppercut?-.16:.045)*drive+side*.08*prep;
- if(uppercut)shoulderX-=.08*drive;
- put('RA',shoulderX,shoulderY,shoulderZ);
- put('RE',-.52*prep-.1*drive-.24*follow,0,0);
- // Braço esquerdo acompanha o peito como guarda, sem copiar o golpe do braço direito.
- put('LA',-.42-.22*(prep+drive*.72+follow*.35),0,side*.16);
- put('LE',-.55-.2*(prep+drive*.5),0,0);
-}
-
+/* O golpe do personagem é amostrado diretamente dos keyframes GLB retargetados. */
 /* x = estado do jogo neste frame */
 function ualLayer(dt,x){
  const C=UA.clips,{og,sp,vy,mining,mineA,show,landV,cp,camYaw}=x;
@@ -870,8 +840,8 @@ function ualLayer(dt,x){
  if(U.airN&&!airN&&og){U.landT=0;U.landL=clamp((landV||0)/16,.25,1)}   // pouso
  U.airN=airN;U.landT=airN?9:U.landT+dt;
  U.mn+=((mining?1:0)-U.mn)*(1-Math.exp(-dt*12));
- let wp=0;const pc=C[PUN[U.pk]];
- if(U.pu>=0){U.pu+=dt*U.ps;const pd=pc.dur;if(U.pu>=pd)U.pu=-1;else wp=sm(U.pu/.07)*(1-sm((U.pu-(pd-.2))/.2))}
+ let wp=0;const pc=punchClip(U.cat);
+ if(U.pu>=0){U.pu+=dt*U.ps;const pd=pc?pc.dur:.5;if(U.pu>=pd)U.pu=-1;else wp=sm(U.pu/.07)*(1-sm((U.pu-(pd-.2))/.2))}
  U.wp=wp;
 
  /* pesos-alvo pela velocidade */
@@ -902,10 +872,10 @@ function ualLayer(dt,x){
  }
  if(sum===0){ualSamp(C.idle,U.t.idle,aQ,aP)}
 
- if(wp>.003){
-  const phase=clamp(U.pu/Math.max(.01,pc.dur),0,1);
-  punchBodyPose(phase,U.cat,U.fk,pQ);
-  for(let i=0;i<aQ.length;i++){const n=UA.ORDER[i];if(n==='hip'||n==='upper'||n==='LA'||n==='LE'||n==='RA'||n==='RE')aQ[i].slerp(pQ[i],wp)}
+ if(wp>.003&&pc&&OWM.punchClips.sample(U.cat,U.pu,pQ,pP)){
+  /* O clip importado conduz os 11 ossos do rig, sem substituir o deslocamento normal por código procedural. */
+  for(let i=0;i<aQ.length;i++)aQ[i].slerp(pQ[i],wp);
+  aP.addScaledVector(pP,wp);
  }
 
  /* pouso por cima: agacha e a mola devolve; correndo, afeta só o quadril/tronco */
@@ -1248,24 +1218,7 @@ const KMAP=[5,6,7,3,4];   // idx semântico do combo (M1a,M1b,M2 abertura,M2 ap�
 const K={w:0,t:-1,n:2,hit:false,strike:false,pend:false,dr:9,was:false,sp:0,rc:null,cur:null,sinfo:null,ts:1,cat:'lmb',oc:null,dur:.44,hf:.4};   // rc = golpe de combo (M1/M2) na fila; cur = o que está em andamento; ts = velocidade do golpe
 /* Soco sem arma em 1ª pessoa: o mesmo braço da faca (sem a faca), que entra durante o soco e sai logo depois. Trilhas [u, x,y,z, rx,ry,rz] no espaço da câmera,
    mesmo formato das da faca (v de KSW). 0 = jab (reto), 1 = cruzado (vem de fora pro centro). Ritmo = o do clipe punch1/punch2 (U.pu). */
-const F1={w:0,hold:0},GUARD=[.21,-.22,-.44,0,0,0];
-const FSW=[
- /* LMB A — jab: preparação curta, extensão direta e retorno amortecido. */
- [[0,.21,-.22,-.44,0,0,0],[.08,.25,-.2,-.39,.1,0,-.04],[.18,.31,-.16,-.34,.22,0,-.12],[.29,.11,-.15,-.68,-.42,0,.06],[.39,.08,-.14,-.72,-.48,0,.08],[.58,.14,-.17,-.56,-.22,0,.03],[.82,.2,-.21,-.46,.03,0,0],[1,.21,-.22,-.44,0,0,0]],
- /* LMB B — cruzado: sai de fora, cruza o centro e deixa o antebraço terminar o movimento. */
- [[0,.21,-.22,-.44,0,0,0],[.08,.27,-.2,-.39,.1,0,-.12],[.19,.38,-.17,-.33,.2,0,-.38],[.3,-.015,-.15,-.67,-.43,0,.36],[.4,-.055,-.14,-.71,-.5,0,.42],[.59,.045,-.17,-.57,-.24,0,.22],[.83,.19,-.21,-.46,.03,0,.02],[1,.21,-.22,-.44,0,0,0]],
- /* M1 A — jab direto e compacto. */
- [[0,.21,-.22,-.44,0,0,0],[.07,.25,-.2,-.39,.1,0,-.04],[.17,.32,-.16,-.34,.22,0,-.13],[.28,.105,-.15,-.7,-.46,0,.04],[.38,.075,-.14,-.74,-.5,0,.06],[.56,.14,-.17,-.57,-.23,0,.02],[.82,.2,-.21,-.46,.03,0,0],[1,.21,-.22,-.44,0,0,0]],
- /* M1 B — gancho curto, cotovelo conduz o arco. */
- [[0,.21,-.22,-.44,0,0,0],[.08,.28,-.2,-.38,.08,0,-.2],[.19,.39,-.16,-.34,.18,0,-.56],[.3,-.025,-.2,-.63,-.36,0,.48],[.4,-.085,-.23,-.66,-.42,0,.58],[.58,.015,-.21,-.55,-.2,0,.32],[.84,.19,-.21,-.46,.02,0,.04],[1,.21,-.22,-.44,0,0,0]],
- /* M2 — cruzado pesado: mais carga no ombro, alcance e recuperação mais lentos. */
- [[0,.21,-.22,-.44,0,0,0],[.08,.27,-.24,-.37,.12,0,-.16],[.2,.4,-.29,-.3,.3,0,-.42],[.24,-.035,-.18,-.74,-.62,0,.34],[.34,-.075,-.16,-.77,-.68,0,.4],[.62,.015,-.2,-.61,-.34,0,.2],[.86,.18,-.22,-.47,.02,0,.03],[1,.21,-.22,-.44,0,0,0]],
- /* M2 após M1 — overhand: mão sobe na preparação e desce em diagonal. */
- [[0,.21,-.22,-.44,0,0,0],[.08,.28,-.14,-.38,.18,0,-.18],[.2,.37,-.035,-.32,.42,0,-.32],[.24,-.035,-.3,-.7,-.82,0,.36],[.34,-.075,-.34,-.73,-.9,0,.42],[.62,.015,-.25,-.59,-.42,0,.2],[.86,.18,-.22,-.47,.02,0,.03],[1,.21,-.22,-.44,0,0,0]],
- /* M2 após M2 — uppercut: começa baixo e sobe pelo centro. */
- [[0,.21,-.22,-.44,0,0,0],[.08,.26,-.31,-.39,.15,0,.04],[.2,.32,-.43,-.32,.3,0,.12],[.24,.09,.005,-.68,-.72,0,-.08],[.34,.055,.055,-.72,-.78,0,-.1],[.62,.13,-.08,-.57,-.38,0,-.03],[.86,.19,-.2,-.47,.02,0,0],[1,.21,-.22,-.44,0,0,0]]
-];
-const FMAP=[2,3,4,5,6];
+const GUARD=[.21,-.22,-.44,0,0,0],FPPOSE=[.21,-.22,-.44,0,0,0];
 const kBasis=(o,ex,ey,ez)=>o.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(...ex),new THREE.Vector3(...ey),new THREE.Vector3(...ez)));
 /* 3ª pessoa: faca presa ao antebraço direito (RE), cabo na palma, lâmina na direção do antebraço, levemente pra cima */
 const GRIP=GK?[.015,-.165,0]:[-.085,-.27,0];   // onde a arma fica em relação ao osso do cotovelo (RE): palma da mão do Goku (mão mais alta/curta que a do modelo antigo)
@@ -1329,9 +1282,6 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
  }
  const tp=!!s.tp3,fp=!tp&&s.inGame;
  if(k3)k3.visible=tp&&K.w>.02;
- /* braço de soco (sem arma): aparece enquanto o clipe LMB roda e some ~.35 s depois */
- const pa=!OWM.weapon.id&&!custom&&U.pu>=0;F1.hold=pa?.35:Math.max(0,F1.hold-dt);
- F1.w+=(((pa||F1.hold>0)&&!on?1:0)-F1.w)*(1-Math.exp(-dt*(pa?18:9)));
  VM.g.visible=VM.ok&&fp&&(K.w>.02||!on||!!coil||SO.fw>.02);
  if(VM.kn)VM.kn.visible=K.w>.02;
  const SW=KSW[K.n],u=K.t>=0?clamp(K.t/K.dur,0,1):0;
@@ -1347,7 +1297,7 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
   const ks=Math.min(1,s.sprint&&sp>4?1:0);K.sp+=(ks-K.sp)*(1-Math.exp(-dt*8));
   let v,dr;
   if(K.w>.02){v=K.t>=0?crN(SW.v,u):GUARD;dr=1-sm(K.dr/.4)}
-  else{const pd=UA&&UA.clips[PUN[U.pk]]?UA.clips[PUN[U.pk]].dur:.5;v=U.pu>=0?crN(FSW[U.fk],clamp(U.pu/pd,0,1)):GUARD;dr=0}
+  else{v=GUARD;if(U.pu>=0&&pc&&OWM.punchClips.sample(U.cat,U.pu,null,null,FPPOSE))v=FPPOSE.slice();dr=0}
   if(SO.fpL.length){for(const e of SO.fpL){const a=v,w=e.w;v=[a[0]+(e.v[0]-a[0])*w,a[1]+(e.v[1]-a[1])*w,a[2]+(e.v[2]-a[2])*w,a[3]+(e.v[3]-a[3])*w,a[4]+(e.v[4]-a[4])*w,a[5]+(e.v[5]-a[5])*w]}dr*=1-SO.fw}   // mão do Estúdio de Animação
   const hw=Math.tan(cam.fov*Math.PI/360)*cam.aspect*.44*.62,xs=Math.min(1,hw/.21),d=dr,br=Math.sin(ST.idleT*1.8);
   let x=v[0]*xs,y=v[1]+br*.004+Math.abs(Math.sin(ST.ph))*.012*A-K.sp*.05+ST.sq.x*.25-d*.35,z=v[2]-K.sp*.02;
@@ -1404,7 +1354,7 @@ function studioUpdate(dt,s,og,vel,moving){
  const L=SO.cur;
  if(L){
   const c=L.clip=clip||L.clip;
-  if(cat==='lmb'||cat==='m1'||cat==='m2'){const u=K.t>=0?K.t/K.dur:(U.pu>=0&&UA?U.pu/UA.clips[PUN[U.pk]].dur:1);L.t=clamp(u,0,1)*studioTotal(c)}
+  if(cat==='lmb'||cat==='m1'||cat==='m2'){const pc=punchClip(U.cat),u=K.t>=0?K.t/K.dur:(U.pu>=0&&pc?U.pu/pc.dur:1);L.t=clamp(u,0,1)*studioTotal(c)}
   else if(cat==='dash'&&typeof s.dash==='number')L.t=clamp(s.dash,0,1)*studioTotal(c);
   else{const tot=studioTotal(c);L.t+=dt*c.speed;if(c.loop)L.t%=tot;else L.t=Math.min(L.t,tot)}
   L.w=Math.min(1,L.w+dt*14);
@@ -1453,11 +1403,12 @@ function combo(kind,idx,armed,step){
   if(K.t>=0&&K.t<K.dur*.35)return false;
   K.rc={kind,idx,step,n:KMAP[idx]};K.pend=true;return true;
  }
- if(!UA||!UA.clips.punch1)return false;
- if(U.pu>=0&&U.pu<UA.clips[PUN[U.pk]].dur*.5)return false;
- U.pk=kind-1;U.fk=FMAP[idx];U.cat=kind===1?'m1':'m2';U.ps=punchPs(U.cat);U.pu=0;return true;
+ const cat=kind===1?'m1':'m2',c=punchClip(cat),active=punchClip(U.cat);
+ if(!c)return false;
+ if(U.pu>=0&&active&&U.pu<active.dur*.5)return false;
+ U.cat=cat;U.ps=punchPs(U.cat);U.pu=0;return true;
 }
-OWM.anim={vmPreview,studioHit:cat=>{const AS=OWM.animstudio;return AS&&AS.hitTime?AS.hitTime(cat):null},setHair,strike:()=>K.strike,strikeInfo:()=>K.sinfo,combo,av,update,bones,sampleTrack,reloadIdle,resetPose,hit,punch,fx:FX,setQuality};
+OWM.anim={vmPreview,studioHit:cat=>{const AS=OWM.animstudio,custom=AS&&AS.hitTime?AS.hitTime(cat):null,clip=punchClip(cat);return custom!=null?custom:(clip?clip.hit:null)},setHair,strike:()=>K.strike,strikeInfo:()=>K.sinfo,combo,av,update,bones,sampleTrack,reloadIdle,resetPose,hit,punch,fx:FX,setQuality};
 reloadIdle();
 if(SK&&SK.colors&&SK.colors.hairStyle)hairId=SK.colors.hairStyle;
 {const S0=OWM.S||{};buildMeshes(S0.charQ==null?(OWM.touch?1:2):S0.charQ);clothOn=S0.cloth!==0}
