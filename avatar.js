@@ -1364,24 +1364,13 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
      else if(n==='LL'||n==='LK'||n==='RL'||n==='RK')b.quaternion.slerp(pQ[i],wLeg).normalize();
     }
     if(wLeg>.003)hip.position.y+=pP.y*wLeg;
-    /* No fade-out, the legacy knife guard is the destination pose. */
-    const guardR=K.w*(1-blend),guardL=guardR*.85*(1-.7*A);
-    if(guardR>.001){
-     B.RA.quaternion.slerp(_qa.setFromEuler(_ea.set(KG[0],KG[1],KG[2])),guardR).normalize();
-     B.RE.quaternion.slerp(_qa.setFromEuler(_ea.set(KG[3],0,0)),guardR).normalize();
-     B.LA.quaternion.slerp(_qa.setFromEuler(_ea.set(KG[6],0,KG[7])),guardL).normalize();
-     B.LE.quaternion.slerp(_qa.setFromEuler(_ea.set(KG[8],0,0)),guardL).normalize();
-     if(clipOn)upper.quaternion.multiply(_qa.setFromEuler(_ea.set(KG[4]*guardR,KG[5]*guardR,0)));
-    }
    }
    if(fp)for(let i=0;i<6;i++)SWORD_FP[i]=GUARD[i]+(SWORD_FP[i]-GUARD[i])*blend;
   }
  }
  const SW=KSW[K.n],u=K.t>=0?clamp(K.t/K.dur,0,1):0;
- if(tp&&K.w>.01&&!swordActive){
-  let v;
-  if(K.t>=0)v=crN(SW.r,u);
-  else{const sw=Math.sin(ST.idleT*1.9)*.02;v=KG.slice();v[0]+=sw+Math.sin(ST.ph)*.05*A;v[3]+=sw*1.2;v[1]+=Math.cos(ST.ph*.5)*.02*A}
+ if(tp&&K.w>.01&&!swordActive&&K.t>=0){
+  const v=crN(SW.r,u);
   const lw=K.w*.85*(1-.7*A),sl=(b,x,y,z,w)=>b.quaternion.slerp(_qa.setFromEuler(_ea.set(x,y,z)),w);
   sl(B.RA,v[0],v[1],v[2],K.w);sl(B.RE,v[3],0,0,K.w);sl(B.LA,v[6],0,v[7],lw);sl(B.LE,v[8],0,0,lw);
   if(clipOn)upper.quaternion.multiply(_qa.setFromEuler(_ea.set(v[4]*K.w,v[5]*K.w,0)));
