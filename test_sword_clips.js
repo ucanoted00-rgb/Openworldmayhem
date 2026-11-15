@@ -67,7 +67,12 @@ for(const id of ['lmb','m1','m2']){
    else assert(Math.abs(d[o+47+k])<1,id+': posição GLB híbrida fora de 1m frame '+f);
   }
  }
- for(const b of [7,8,9,10]){\n  let legAngle=0;\n  for(let f=1;f<c.frames;f++){const a=(f-1)*53+3+b*4,z=f*53+3+b*4,dot=Math.abs(c.data.slice(a,a+4).reduce((sum,v,k)=>sum+v*c.data[z+k],0));legAngle=Math.max(legAngle,2*Math.acos(Math.max(-1,Math.min(1,dot))))}\n  assert(legAngle>5*Math.PI/180,id+': perna/joelho '+api.order[b]+' sem movimento');\n }\n assert(maxAngle<90,id+': salto angular '+maxAngle.toFixed(2)+'°');
+ for(const b of [7,8,9,10]){
+  let legAngle=0;
+  for(let f=1;f<c.frames;f++){const a=(f-1)*53+3+b*4,z=f*53+3+b*4,dot=Math.abs(c.data.slice(a,a+4).reduce((sum,v,k)=>sum+v*c.data[z+k],0));legAngle=Math.max(legAngle,2*Math.acos(Math.max(-1,Math.min(1,dot))))}
+  assert(legAngle>5*Math.PI/180,id+': perna/joelho '+api.order[b]+' sem movimento');
+ }
+ assert(maxAngle<90,id+': salto angular '+maxAngle.toFixed(2)+'°');
  assert(maxGuardAngle<90,id+': último frame distante da guarda ('+maxGuardAngle.toFixed(2)+'°)');
  const qs=Array.from({length:11},()=>new Quaternion()),pos={set(x,y,z){this.x=x;this.y=y;this.z=z;return this}},fp=new Float32Array(6);
  for(let f=0;f<c.frames;f++){
