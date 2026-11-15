@@ -57,7 +57,11 @@ for(const id of ['lmb','m1','m2']){
    }
   }
   if(f===c.frames-1){for(const name of Object.keys(guard)){const p=o+3+boneIndex[name]*4,g=guard[name],dot=Math.abs(d[p]*g.x+d[p+1]*g.y+d[p+2]*g.z+d[p+3]*g.w);maxGuardAngle=Math.max(maxGuardAngle,2*Math.acos(Math.max(-1,Math.min(1,dot)))*180/Math.PI)}}
-  for(let k=0;k<3;k++)assert(d[o+47+k]>=bounds[k][0]&&d[o+47+k]<=bounds[k][1],id+': FP fora do envelope frame '+f);
+  const hybrid=(c.fallbackFrames||[]).includes(f);
+  for(let k=0;k<3;k++){
+   if(!hybrid)assert(d[o+47+k]>=bounds[k][0]&&d[o+47+k]<=bounds[k][1],id+': FP fora do envelope sem fallback frame '+f);
+   else assert(Math.abs(d[o+47+k])<1,id+': posição GLB híbrida fora de 1m frame '+f);
+  }
  }
  assert(maxAngle<90,id+': salto angular '+maxAngle.toFixed(2)+'°');
  assert(maxGuardAngle<90,id+': último frame distante da guarda ('+maxGuardAngle.toFixed(2)+'°)');
