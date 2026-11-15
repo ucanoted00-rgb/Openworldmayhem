@@ -1306,7 +1306,8 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
    else{K.n=(K.n+1)%3;K.cur=null;K.ts=1}
    K.pend=false;K.hit=false;K.cat=K.cur?(K.cur.kind===1?'m1':'m2'):'lmb';
    const oc=studioClip(K.cat);K.oc=oc;
-   const candidate=!oc&&OWM.swordClips&&OWM.swordClips.clips&&OWM.swordClips.clips[K.cat];
+   const swordWeapon=OWM.weapon.id==='knife'||OWM.weapon.id==='knife_intermediate'||OWM.weapon.id==='stone_knife';
+   const candidate=swordWeapon&&!oc&&OWM.swordClips&&OWM.swordClips.clips&&OWM.swordClips.clips[K.cat];
    K.sc=candidate&&candidate.data&&candidate.frames>=2&&candidate.data.length===candidate.frames*53?candidate:null;
    K.ts=oc?oc.speed:(K.sc?K.sc.speed:(K.cur?(K.cur.kind===1?1.25:.92):1));
    K.dur=oc?studioTotal(oc):(K.sc?K.sc.dur:KSW[K.n].dur);
