@@ -118,7 +118,7 @@ def fp_track(path, nframes, hit_frame, fallback_idx):
             # Híbrido: posição GLB mantida, orientação KSW equivalente.
             eul=fallback_orientation(fallback_idx,f/(nframes-1))
             fallback_frames.append(f)
-        pos=np.asarray([np.clip(pos[k],*FP_BOUNDS[k]) for k in range(3)])
+        # Híbrido: preservar a posição GLB original; somente a orientação usa fallback KSW quando sai do envelope.
         out[f,:3]=pos; out[f,3:]=[wrap(v) for v in eul]
     return out, fallback_frames
 
