@@ -68,3 +68,4 @@ Licença CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) — modificado:
 Animações de espada (LMB, M1 e M2): "Sword - slash", "Sword - dash slash" e "Sword - slash B", da Universal Animation Library (Quaternius), disponibilizadas pelo KinemIQ — CC0 1.0 (domínio público).
 Referências: https://kinemiq.app/animations/sword-slash/ ; https://kinemiq.app/animations/sword-dash-slash/ ; https://kinemiq.app/animations/sword-slash-b/
 Modificado: animações retargetadas em espaço de mundo para o rig de 11 ossos do OWM; root motion horizontal removido do personagem e mantido apenas como metadado.
+Arquivos GLB de origem: Sword_-_slash.glb (LMB), Sword_-_slash_B.glb (M1) e Sword_-_dash_slash.glb (M2).
