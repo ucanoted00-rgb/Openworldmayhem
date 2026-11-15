@@ -24,6 +24,10 @@ require(path.resolve(process.argv[2]||'sword-clips.js'));
 const api=global.OWM.swordClips;
 assert(api&&api.clips&&typeof api.sample==='function','OWM.swordClips não foi registrado');
 assert.deepEqual(api.order,['hip','upper','hm','LA','LE','RA','RE','LL','LK','RL','RK']);
+assert.equal(api.clips.lmb.source,'Sword_-_slash.glb','LMB deve usar o GLB próprio');
+assert.equal(api.clips.m1.source,'Sword_-_slash_B.glb','M1 deve usar o GLB próprio');
+assert.equal(api.clips.m2.source,'Sword_-_dash_slash.glb','M2 deve usar o GLB próprio');
+assert.notEqual(api.clips.m1.source,api.clips.m2.source,'M1 e M2 não podem compartilhar o mesmo GLB');
 const bounds=[[-.12001,.34001],[-.34001,.00001],[-.72001,-.19999]];
 function smooth(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
 function clipWeight(c,t){return smooth(t/.09)*(1-smooth((t-(c.dur-.20))/.20))}
@@ -63,7 +67,7 @@ for(const id of ['lmb','m1','m2']){
    else assert(Math.abs(d[o+47+k])<1,id+': posição GLB híbrida fora de 1m frame '+f);
   }
  }
- assert(maxAngle<90,id+': salto angular '+maxAngle.toFixed(2)+'°');
+ for(const b of [7,8,9,10]){\n  let legAngle=0;\n  for(let f=1;f<c.frames;f++){const a=(f-1)*53+3+b*4,z=f*53+3+b*4,dot=Math.abs(c.data.slice(a,a+4).reduce((sum,v,k)=>sum+v*c.data[z+k],0));legAngle=Math.max(legAngle,2*Math.acos(Math.max(-1,Math.min(1,dot))))}\n  assert(legAngle>5*Math.PI/180,id+': perna/joelho '+api.order[b]+' sem movimento');\n }\n assert(maxAngle<90,id+': salto angular '+maxAngle.toFixed(2)+'°');
  assert(maxGuardAngle<90,id+': último frame distante da guarda ('+maxGuardAngle.toFixed(2)+'°)');
  const qs=Array.from({length:11},()=>new Quaternion()),pos={set(x,y,z){this.x=x;this.y=y;this.z=z;return this}},fp=new Float32Array(6);
  for(let f=0;f<c.frames;f++){
