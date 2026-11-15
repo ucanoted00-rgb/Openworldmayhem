@@ -988,7 +988,7 @@ function hairStep(dt){
 const COMBAT_GUARD_Q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.72,0,.24));
 const COMBAT_GUARD_ELBOW_Q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.78,0,0));
 function combatBodyOverlay(){
- if(!av.visible||(SO.cur&&SO.cur.clip)||K.t<0)return;
+ if(!av.visible||(SO.cur&&SO.cur.clip)||K.t<0||K.sc)return;
  let t=0,kind=1,idx=0,active=false;
  if(K.t>=0){
   active=true;t=clamp(K.t/Math.max(.01,K.dur),0,1);
@@ -1283,23 +1283,102 @@ function refreshKnifeModel(){
  addModel(k3);if(VM.kn)addModel(VM.kn);
 }
 
+function swordClipSample(id,t,q,p,fp){
+ try{return !!(OWM.swordClips&&OWM.swordClips.sample&&OWM.swordClips.sample(id,t,q,p,fp))}catch(e){return false}
+}
+function swordClipBlend(c,t){
+ const enter=sm(clamp(t/.09,0,1)),leave=1-sm(clamp((t-(c.dur-.20))/.20,0,1));
+ return enter*leave;
+}
+/* Evita que o Estúdio sobrescreva um GLB de espada. Também detecta o primeiro
+   frame do ataque, antes de knifeUpdate transformar o pedido em K.sc ativo. */
+function swordGlbRequested(s){
+ const id=OWM.weapon&&OWM.weapon.id;
+ if(id!=='knife'&&id!=='knife_intermediate'&&id!=='stone_knife')return false;
+ if(K.t>=0&&K.sc)return true;
+ if(K.t>=0||!s||!(s.attack||K.pend||K.rc))return false;
+ const cat=K.rc?(K.rc.kind===1?'m1':'m2'):'lmb';
+ const c=OWM.swordClips&&OWM.swordClips.clips&&OWM.swordClips.clips[cat];
+ return !!(c&&c.data&&c.frames>=2&&c.data.length===c.frames*53);
+}
+const SWORD_FP=[.21,-.22,-.44,0,0,0];
+
 function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
- const coil=s.coil;   // antes 'coil' não existia aqui: ReferenceError todo frame em 1ª pessoa parado
+ const coil=s.coil;
  if(weaponVisualId!==OWM.weapon.id||weaponVisualVersion!==(OWM.stoneKnifeModelVersion||0))refreshKnifeModel();
  const on=!!(OWM.weapon.id&&OWM.weapons&&OWM.weapons[OWM.weapon.id])&&!custom;
  K.w+=((on?1:0)-K.w)*(1-Math.exp(-dt*(on?12:10)));
  if(on&&!K.was)K.dr=0;K.was=on;K.dr+=dt;K.strike=false;K.sinfo=null;
- if(!on){K.t=-1;K.pend=false;K.rc=null}
+ if(!on){K.t=-1;K.pend=false;K.rc=null;K.sc=null;K.end=false}
  else{
-  if(K.t<0&&(s.attack||K.pend)){K.t=0;if(K.rc){K.n=K.rc.n;K.cur=K.rc;K.ts=K.rc.kind===1?1.25:.92;K.rc=null}else{K.n=(K.n+1)%3;K.cur=null;K.ts=1}K.pend=false;K.hit=false;K.cat=K.cur?(K.cur.kind===1?'m1':'m2'):'lmb';const oc=studioClip(K.cat);K.oc=oc;if(oc)K.ts=oc.speed;K.dur=oc?studioTotal(oc):KSW[K.n].dur;K.hf=oc?oc.hit*oc.dur/studioTotal(oc):KSW[K.n].hit}   // M1 = rápido (1,25×), M2 = pesado (0,92×); LMB segue o ciclo antigo de 3 cortes
-  if(K.t>=0){K.t+=dt*K.ts;if(!K.hit&&K.t>=K.dur*K.hf){K.hit=true;K.strike=true;K.sinfo=K.cur}if(K.t>=K.dur)K.t=-1}   // dur/hf = do KSW, ou do clipe do Estúdio de Animação
+  if(K.t<0&&(s.attack||K.pend)){
+   K.t=0;
+   if(K.rc){K.n=K.rc.n;K.cur=K.rc;K.ts=K.rc.kind===1?1.25:.92;K.rc=null}
+   else{K.n=(K.n+1)%3;K.cur=null;K.ts=1}
+   K.pend=false;K.hit=false;K.cat=K.cur?(K.cur.kind===1?'m1':'m2'):'lmb';
+   const swordWeapon=OWM.weapon.id==='knife'||OWM.weapon.id==='knife_intermediate'||OWM.weapon.id==='stone_knife';
+   /* GLBs enviados: LMB = Sword_-_slash.glb; M1 = Sword_-_slash_B.glb; M2 = Sword_-_dash_slash.glb.
+      Os GLBs têm prioridade sobre clipes do Estúdio para os golpes com faca. */
+   const candidate=swordWeapon&&OWM.swordClips&&OWM.swordClips.clips&&OWM.swordClips.clips[K.cat];
+   K.sc=candidate&&candidate.data&&candidate.frames>=2&&candidate.data.length===candidate.frames*53?candidate:null;
+   const oc=K.sc?null:studioClip(K.cat);K.oc=oc;
+   K.ts=K.sc?K.sc.speed:(oc?oc.speed:(K.cur?(K.cur.kind===1?1.25:.92):1));
+   K.dur=K.sc?K.sc.dur:(oc?studioTotal(oc):KSW[K.n].dur);
+   K.hf=K.sc?K.sc.hit/K.sc.dur:(oc?oc.hit*oc.dur/studioTotal(oc):KSW[K.n].hit);
+   K.end=false;
+  }
+  if(K.t>=0){
+   if(K.end){K.t=-1;K.end=false;K.sc=null}
+   else{
+    K.t+=dt*K.ts;
+    if(!K.hit&&K.t>=K.dur*K.hf){K.hit=true;K.strike=true;K.sinfo=K.cur}
+    if(K.t>=K.dur){
+     if(K.sc){K.t=K.dur;K.end=true}
+     else K.t=-1;
+    }
+   }
+  }
  }
  const tp=!!s.tp3,fp=!tp&&s.inGame;
  if(k3)k3.visible=tp&&K.w>.02;
  VM.g.visible=VM.ok&&fp&&(K.w>.02||!on||!!coil||SO.fw>.02);
  if(VM.kn)VM.kn.visible=K.w>.02;
+
+ let swordActive=K.t>=0&&!!K.sc;
+ if(swordActive&&((tp&&K.w>.01)||(fp&&VM.g.visible&&K.w>.02))){
+  const ok=swordClipSample(K.cat,K.t,tp?pQ:null,tp?pP:null,fp?SWORD_FP:null);
+  if(!ok){
+   const progress=clamp(K.t/Math.max(.001,K.dur),0,1);
+   K.sc=null;K.end=false;K.t=progress*KSW[K.n].dur;
+   K.ts=K.cur?(K.cur.kind===1?1.25:.92):1;K.dur=KSW[K.n].dur;K.hf=KSW[K.n].hit;
+   swordActive=false;
+  }else{
+   const blend=swordClipBlend(K.sc,K.t);
+   if(tp){
+    cleanClipPose(pQ,true);
+    const idle=clamp(U.w.idle,0,1),clipW=K.w*blend,wHip=clipW*(.5+.5*idle),wLeg=clipW*idle;
+    for(let i=0;i<pQ.length;i++){
+     const n=UA.ORDER[i],b=UI[i];if(!b)continue;
+     if(n==='upper'||n==='LA'||n==='LE'||n==='RA'||n==='RE')b.quaternion.slerp(pQ[i],clipW).normalize();
+     else if(n==='hip')b.quaternion.slerp(pQ[i],wHip).normalize();
+     else if(n==='LL'||n==='LK'||n==='RL'||n==='RK')b.quaternion.slerp(pQ[i],wLeg).normalize();
+    }
+    if(wLeg>.003)hip.position.y+=pP.y*wLeg;
+    /* No fade-out, the legacy knife guard is the destination pose. */
+    const guardR=K.w*(1-blend),guardL=guardR*.85*(1-.7*A);
+    if(guardR>.001){
+     B.RA.quaternion.slerp(_qa.setFromEuler(_ea.set(KG[0],KG[1],KG[2])),guardR).normalize();
+     B.RE.quaternion.slerp(_qa.setFromEuler(_ea.set(KG[3],0,0)),guardR).normalize();
+     B.LA.quaternion.slerp(_qa.setFromEuler(_ea.set(KG[6],0,KG[7])),guardL).normalize();
+     B.LE.quaternion.slerp(_qa.setFromEuler(_ea.set(KG[8],0,0)),guardL).normalize();
+     if(clipOn)upper.quaternion.multiply(_qa.setFromEuler(_ea.set(KG[4]*guardR,KG[5]*guardR,0)));
+    }
+   }
+   if(fp)for(let i=0;i<6;i++)SWORD_FP[i]=GUARD[i]+(SWORD_FP[i]-GUARD[i])*blend;
+  }
+ }
  const SW=KSW[K.n],u=K.t>=0?clamp(K.t/K.dur,0,1):0;
- if(tp&&K.w>.01){
+ if(tp&&K.w>.01&&!swordActive){
   let v;
   if(K.t>=0)v=crN(SW.r,u);
   else{const sw=Math.sin(ST.idleT*1.9)*.02;v=KG.slice();v[0]+=sw+Math.sin(ST.ph)*.05*A;v[3]+=sw*1.2;v[1]+=Math.cos(ST.ph*.5)*.02*A}
@@ -1310,17 +1389,18 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
  if(VM.g.visible){
   const ks=Math.min(1,s.sprint&&sp>4?1:0);K.sp+=(ks-K.sp)*(1-Math.exp(-dt*8));
   let v,dr;
-  if(K.w>.02){v=K.t>=0?crN(SW.v,u):GUARD;dr=1-sm(K.dr/.4)}
-  else{const fpClip=punchClip(U.cat),playing=U.pu>=0&&!!fpClip;FP_BLEND.w+=( (playing?1:0)-FP_BLEND.w )*(1-Math.exp(-dt*(playing?18:9)));v=GUARD.slice();if(fpClip&&(playing||FP_BLEND.w>.003)&&OWM.punchClips.sample(U.cat,playing?U.pu:fpClip.dur,null,null,FPPOSE)){for(let i=0;i<6;i++)v[i]+=(FPPOSE[i]-v[i])*FP_BLEND.w}dr=0}
-  if(SO.fpL.length){for(const e of SO.fpL){const a=v,w=e.w;v=[a[0]+(e.v[0]-a[0])*w,a[1]+(e.v[1]-a[1])*w,a[2]+(e.v[2]-a[2])*w,a[3]+(e.v[3]-a[3])*w,a[4]+(e.v[4]-a[4])*w,a[5]+(e.v[5]-a[5])*w]}dr*=1-SO.fw}   // mão do Estúdio de Animação
+  if(K.w>.02){
+   if(swordActive){v=SWORD_FP;dr=0}
+   else if(K.t>=0){v=crN(SW.v,u);dr=1-sm(K.dr/.4)}
+   else{v=GUARD;dr=1-sm(K.dr/.4)}
+  }else{const fpClip=punchClip(U.cat),playing=U.pu>=0&&!!fpClip;FP_BLEND.w+=( (playing?1:0)-FP_BLEND.w )*(1-Math.exp(-dt*(playing?18:9)));v=GUARD.slice();if(fpClip&&(playing||FP_BLEND.w>.003)&&OWM.punchClips.sample(U.cat,playing?U.pu:fpClip.dur,null,null,FPPOSE)){for(let i=0;i<6;i++)v[i]+=(FPPOSE[i]-v[i])*FP_BLEND.w}dr=0}
+  if(SO.fpL.length&&!swordActive){for(const e of SO.fpL){const a=v,w=e.w;v=[a[0]+(e.v[0]-a[0])*w,a[1]+(e.v[1]-a[1])*w,a[2]+(e.v[2]-a[2])*w,a[3]+(e.v[3]-a[3])*w,a[4]+(e.v[4]-a[4])*w,a[5]+(e.v[5]-a[5])*w]}dr*=1-SO.fw}
   const hw=Math.tan(cam.fov*Math.PI/360)*cam.aspect*.44*.62,xs=Math.min(1,hw/.21),d=dr,br=Math.sin(ST.idleT*1.8);
   let x=v[0]*xs,y=v[1]+br*.004+Math.abs(Math.sin(ST.ph))*.012*A-K.sp*.05+ST.sq.x*.25-d*.35,z=v[2]-K.sp*.02;
   x+=Math.cos(ST.ph)*.01*A;
-  /* orientação da faca (espaço da câmera) -> osso do antebraço; posição da mão -> cotovelo/ombro */
   vmPose(x,y,z,v[3]+d*.9+K.sp*.25,v[4]+clamp(ST.yr*.012,-.08,.08),v[5]-K.sp*.15);
  }
 }
-
 
 function vmPose(x,y,z,r0,r1,r2){   // põe o braço/arma de 1ª pessoa: mão em (x,y,z) e orientação (r0,r1,r2) no espaço da câmera
   _Q1.setFromEuler(_eu.set(r0,r1,r2)).multiply(QKB).multiply(QREL_I);   // Qfe (mundo)
@@ -1360,6 +1440,8 @@ function studioCat(s,og,vel,moving){
 function studioUpdate(dt,s,og,vel,moving){
  const AS=OWM.animstudio;
  SO.fpL.length=0;SO.fw=0;
+ /* Os GLBs enviados são a fonte da animação durante os golpes com faca. */
+ if(swordGlbRequested(s)){SO.cur=SO.old=null;SO.cat=null;return}
  if(!AS||!AS.any||!AS.any()||s.custom||s.coil){SO.cur=SO.old=null;SO.cat=null;return}
  SO.airT=og?0:SO.airT+dt;
  const cat=studioCat(s,og,vel,moving),clip=AS.clip(cat);
@@ -1380,7 +1462,7 @@ function studioUpdate(dt,s,og,vel,moving){
 function studioBones(tp){
  const AS=OWM.animstudio;
  let ox=0,oy=0,oz=0,any=false;
- if(AS&&tp&&(SO.cur||SO.old)){
+ if(AS&&tp&&(SO.cur||SO.old)&&!(K.t>=0&&K.sc)){
   for(const Y of[SO.old,SO.cur]){
    if(!Y)continue;
    const w=Y.w,tr=Y.clip.tracks,ct=AS.clipTime(Y.clip,Y.t);
