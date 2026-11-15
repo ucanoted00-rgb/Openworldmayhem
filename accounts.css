@@ -1,0 +1,113 @@
+/* Contas e amigos — complementa style.css */
+.acc-msg{min-height:20px;font-size:13px}
+.acc-msg.bad{color:#ff6b78}
+.acc-who{min-height:0;color:#c9ccd8;font-weight:700}
+.acc-list{height:min(340px,44vh)}
+.acc-h{margin:6px 2px 2px;color:#9aa0b4;font:800 12px var(--f);letter-spacing:.12em;text-transform:uppercase}
+.acc-h:first-child{margin-top:0}
+.acc-empty{padding:14px 8px;color:#9aa0b4;font-size:13px;text-align:center}
+.acc-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:#ffffff08}
+.acc-t{flex:1;min-width:0}
+.acc-t p{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;line-height:1.25}
+.acc-t p+p{color:#9aa0b4;font-size:12px}
+.acc-a{display:flex;gap:6px;flex:none}
+.acc-dot{flex:none;width:10px;height:10px;border-radius:50%;background:#555a6a;box-shadow:0 0 0 2px #0006}
+.acc-dot.on{background:var(--ok);box-shadow:0 0 8px #4caf50aa,0 0 0 2px #0006}
+.acc-row .btn.mini{width:auto;height:36px;padding:0 12px;font-size:13px;box-shadow:0 3px 0 #000a}
+.acc-row .btn.mini.ok{background:linear-gradient(#3f9a43,#2e7d32);border-color:#4caf50}
+.acc-row .btn.mini.warn:hover:not(:disabled){border-color:var(--ac)}
+@media (max-height:520px){
+  .screen[data-scr=acct],.screen[data-scr=friends]{justify-content:flex-start}
+  .acc-list{height:min(200px,38vh)}
+}
+
+/* Identidade local e conexão P2P */
+.acc-intro{max-width:440px;text-align:center;line-height:1.45}
+.acc-code-row{display:flex;align-items:center;gap:8px;width:100%;max-width:440px;padding:9px 10px;border:1px solid #ffffff18;border-radius:9px;background:#ffffff08}
+.acc-code{flex:1;min-width:0;color:#e9ecf8;font:800 14px var(--f);letter-spacing:.06em;overflow-wrap:anywhere}
+.acc-status{min-height:18px;font-size:12px;text-align:center}
+.acc-status.good{color:#83d994}
+.acc-status.bad{color:#ff8991}
+.acc-warning{max-width:440px;color:#ffd27a;font-size:12px;line-height:1.4;text-align:center}
+.acc-backup-row{width:100%;max-width:440px;gap:6px;flex-wrap:wrap}
+.acc-backup-row .btn{flex:1 1 105px;min-width:0;padding-left:8px;padding-right:8px;font-size:13px}
+.acc-code-row .btn.mini{width:auto;flex:none;height:34px;padding:0 10px;font-size:12px}
+.acc-file,.acc-copy-fallback{position:fixed!important;left:-10000px!important;top:-10000px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+.acc-row .btn.mini.warn{background:linear-gradient(#9d4148,#762d35);border-color:#ba535d}
+@media (max-width:420px){
+  .acc-code-row{align-items:stretch;flex-direction:column}
+  .acc-code-row .btn.mini{width:100%}
+  .acc-row{gap:7px;padding:8px 7px}
+  .acc-a{gap:4px}
+  .acc-row .btn.mini{padding:0 8px;font-size:12px}
+}
+
+
+/* Conta e amigos: layout compacto e rolável em celulares pequenos e paisagem. */
+.screen[data-scr=friends]{
+  justify-content:flex-start;
+  gap:clamp(3px,.75vh,7px);
+  padding:max(5px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(5px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;touch-action:pan-y;
+}
+.screen[data-scr=friends] h2{font-size:clamp(16px,4.5vw,21px);line-height:1.12;letter-spacing:.1em;margin:0 0 1px;flex:0 0 auto}
+.screen[data-scr=friends] .acc-who{width:min(620px,94vw);min-height:0;font-size:clamp(11px,3.1vw,14px);line-height:1.2;overflow-wrap:anywhere}
+.screen[data-scr=friends] .acc-code-row{width:min(620px,94vw);max-width:620px;min-height:0;padding:7px 8px;gap:6px;display:flex;flex-direction:row;align-items:center}
+.screen[data-scr=friends] .acc-code{font-size:clamp(10px,3.3vw,14px);line-height:1.2;letter-spacing:.035em;overflow-wrap:anywhere;word-break:break-word}
+.screen[data-scr=friends] .acc-code-row .btn.mini{width:auto;flex:none;height:clamp(30px,5.4vh,36px);font-size:clamp(10px,2.8vw,12px);padding:0 8px;white-space:normal;line-height:1.1}
+.screen[data-scr=friends] .acc-status{width:min(620px,94vw);min-height:14px;font-size:clamp(10px,2.9vw,12px);line-height:1.15}
+.screen[data-scr=friends] .fld{width:min(620px,94vw)}
+.screen[data-scr=friends] .fld label{font-size:clamp(10px,2.9vw,12px);margin:0 0 3px}
+.screen[data-scr=friends] .fld input{height:clamp(34px,6vh,40px);font-size:clamp(13px,3.7vw,16px);padding:0 10px}
+.screen[data-scr=friends] > .btn{width:min(620px,94vw);height:clamp(32px,5.8vh,38px);font-size:clamp(12px,3.3vw,15px);padding:0 8px}
+.screen[data-scr=friends] .acc-list{width:min(620px,94vw);height:auto;min-height:70px;max-height:min(24vh,190px);flex:0 1 auto;padding:6px;gap:4px}
+.screen[data-scr=friends] .acc-h{font-size:clamp(10px,2.9vw,12px);margin:3px 2px 1px}
+.screen[data-scr=friends] .acc-empty{padding:8px 5px;font-size:clamp(11px,3.1vw,13px);line-height:1.25}
+.screen[data-scr=friends] .acc-row{gap:7px;padding:6px 7px;min-width:0}
+.screen[data-scr=friends] .acc-t p{font-size:clamp(12px,3.4vw,15px);line-height:1.2}
+.screen[data-scr=friends] .acc-t p+p{font-size:clamp(10px,2.8vw,12px);white-space:normal;overflow-wrap:anywhere}
+.screen[data-scr=friends] .acc-t p+p.playing{color:#83d994}
+.screen[data-scr=friends] .acc-a{gap:4px}
+.screen[data-scr=friends] .acc-row .btn.mini{height:30px;min-width:0;padding:0 8px;font-size:clamp(10px,2.8vw,12px)}
+.screen[data-scr=friends] .acc-msg{width:min(620px,94vw);min-height:0;font-size:clamp(10px,2.8vw,12px);line-height:1.2}
+.screen[data-scr=friends] .acc-warning{width:min(620px,94vw);max-width:620px;font-size:clamp(9px,2.7vw,12px);line-height:1.25;margin:0}
+.screen[data-scr=friends] .acc-backup-row{width:min(620px,94vw);max-width:620px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.screen[data-scr=friends] .acc-backup-row .btn{height:clamp(32px,5.5vh,38px);min-width:0;padding:0 4px;font-size:clamp(9px,2.7vw,13px);white-space:normal;line-height:1.1}
+.screen[data-scr=friends] .acc-action-row{width:min(620px,94vw);gap:6px}
+.screen[data-scr=friends] .acc-action-row .btn{height:clamp(32px,5.5vh,38px);min-width:0;padding:0 5px;font-size:clamp(9px,2.8vw,13px);white-space:normal;line-height:1.1}
+.screen[data-scr=friends] .acc-back-button{height:clamp(30px,5.2vh,36px);font-size:clamp(11px,3vw,14px)}
+@media(max-width:380px){
+  .screen[data-scr=friends]{gap:3px;padding-left:6px;padding-right:6px}
+  .screen[data-scr=friends] .acc-code-row{gap:4px;padding:6px}
+  .screen[data-scr=friends] .acc-code-row .btn.mini{padding:0 5px;max-width:104px}
+  .screen[data-scr=friends] .acc-list{max-height:21vh;min-height:64px}
+  .screen[data-scr=friends] .acc-backup-row,.screen[data-scr=friends] .acc-action-row{gap:4px}
+  .screen[data-scr=friends] .acc-warning{font-size:9px}
+}
+@media(max-height:600px){
+  .screen[data-scr=friends]{gap:3px;padding-top:max(4px,env(safe-area-inset-top,0px));padding-bottom:max(4px,env(safe-area-inset-bottom,0px))}
+  .screen[data-scr=friends] h2{font-size:clamp(15px,3.7vh,19px)}
+  .screen[data-scr=friends] .acc-list{max-height:20vh;min-height:58px}
+  .screen[data-scr=friends] .acc-row{padding:4px 6px}
+  .screen[data-scr=friends] .acc-row .btn.mini{height:27px}
+  .screen[data-scr=friends] .acc-backup-row .btn,.screen[data-scr=friends] .acc-action-row .btn{height:30px}
+}
+@media(orientation:landscape) and (max-height:520px){
+  .screen[data-scr=friends]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:
+    'title title' 'who status' 'code add' 'code send' 'list list' 'msg msg' 'warning warning' 'backup backup' 'actions actions' 'back back';
+    align-content:start;align-items:center;column-gap:8px;row-gap:3px;padding:4px max(8px,env(safe-area-inset-right,0px)) 4px max(8px,env(safe-area-inset-left,0px))}
+  .screen[data-scr=friends] h2{grid-area:title}
+  .screen[data-scr=friends] .acc-who{grid-area:who}
+  .screen[data-scr=friends] .acc-status{grid-area:status}
+  .screen[data-scr=friends] .acc-code-row{grid-area:code;align-self:stretch}
+  .screen[data-scr=friends] .acc-who,.screen[data-scr=friends] .acc-status,.screen[data-scr=friends] .acc-code-row,.screen[data-scr=friends] .acc-add-field,.screen[data-scr=friends] .acc-send{width:100%;max-width:100%}
+  .screen[data-scr=friends] .acc-add-field{grid-area:add}
+  .screen[data-scr=friends] .acc-send{grid-area:send}
+  .screen[data-scr=friends] .acc-list{grid-area:list;max-height:15vh;min-height:48px}
+  .screen[data-scr=friends] .acc-msg{grid-area:msg}
+  .screen[data-scr=friends] .acc-warning{grid-area:warning}
+  .screen[data-scr=friends] .acc-backup-row{grid-area:backup}
+  .screen[data-scr=friends] .acc-action-row{grid-area:actions}
+  .screen[data-scr=friends] .acc-back-button{grid-area:back}
+}
