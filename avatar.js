@@ -1297,7 +1297,7 @@ function swordGlbRequested(s){
  if(id!=='knife'&&id!=='knife_intermediate'&&id!=='stone_knife')return false;
  if(K.t>=0&&K.sc)return true;
  if(K.t>=0||!s||!(s.attack||K.pend||K.rc))return false;
- const cat=K.rc?(K.rc.kind===1?'m1':'m2'):'lmb';
+ const cat=K.rc?(K.rc.cat||(K.rc.kind===1?'m1':'m2')):'lmb';
  const c=OWM.swordClips&&OWM.swordClips.clips&&OWM.swordClips.clips[cat];
  return !!(c&&c.data&&c.frames>=2&&c.data.length===c.frames*53);
 }
@@ -1313,9 +1313,12 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
  else{
   if(K.t<0&&(s.attack||K.pend)){
    K.t=0;
-   if(K.rc){K.n=K.rc.n;K.cur=K.rc;K.ts=K.rc.kind===1?1.25:.92;K.rc=null}
-   else{K.n=(K.n+1)%3;K.cur=null;K.ts=1}
-   K.pend=false;K.hit=false;K.cat=K.cur?(K.cur.kind===1?'m1':'m2'):'lmb';
+   if(K.rc){
+    const request=K.rc;
+    K.n=request.n;K.cur=request;K.cat=request.cat||(request.kind===1?'m1':'m2');
+    K.ts=request.kind===1?1.25:.92;K.rc=null;
+   }else{K.n=(K.n+1)%3;K.cur=null;K.cat='lmb';K.ts=1}
+   K.pend=false;K.hit=false;
    const swordWeapon=OWM.weapon.id==='knife'||OWM.weapon.id==='knife_intermediate'||OWM.weapon.id==='stone_knife';
    /* GLBs enviados: LMB = Sword_-_slash.glb; M1 = Sword_-_slash_B.glb; M2 = Sword_-_dash_slash.glb.
       Os GLBs têm prioridade sobre clipes do Estúdio para os golpes com faca. */
@@ -1356,14 +1359,14 @@ function knifeUpdate(dt,s,sp,A,rn,clipOn,custom){
    const blend=swordClipBlend(K.sc,K.t);
    if(tp){
     cleanClipPose(pQ,true);
-    const idle=clamp(U.w.idle,0,1),clipW=K.w*blend,wHip=clipW*(.5+.5*idle),wLeg=clipW*idle;
+    const clipW=K.w*blend;
+    /* GLB de ataque é full-body: pernas e quadril também entram durante movimento.
+       A locomoção não deve zerar o peso das pernas, senão o golpe vira só cintura para cima. */
     for(let i=0;i<pQ.length;i++){
-     const n=UA.ORDER[i],b=UI[i];if(!b)continue;
-     if(n==='upper'||n==='LA'||n==='LE'||n==='RA'||n==='RE')b.quaternion.slerp(pQ[i],clipW).normalize();
-     else if(n==='hip')b.quaternion.slerp(pQ[i],wHip).normalize();
-     else if(n==='LL'||n==='LK'||n==='RL'||n==='RK')b.quaternion.slerp(pQ[i],wLeg).normalize();
+     const b=UI[i];if(!b)continue;
+     b.quaternion.slerp(pQ[i],clipW).normalize();
     }
-    if(wLeg>.003)hip.position.y+=pP.y*wLeg;
+    if(clipW>.003)hip.position.y+=pP.y*clipW;
    }
    if(fp)for(let i=0;i<6;i++)SWORD_FP[i]=GUARD[i]+(SWORD_FP[i]-GUARD[i])*blend;
   }
@@ -1486,7 +1489,7 @@ function combo(kind,idx,armed,step){
   if(!OWM.weapon.id||!OWM.weapons||!OWM.weapons[OWM.weapon.id])return false;
   if(K.pend||K.rc)return false;
   if(K.t>=0&&K.t<K.dur*.35)return false;
-  K.rc={kind,idx,step,n:KMAP[idx]};K.pend=true;return true;
+  K.rc={kind,idx,step,n:KMAP[idx],cat:kind===1?'m1':'m2'};K.pend=true;return true;
  }
  const cat=kind===1?'m1':'m2',c=punchClip(cat),active=punchClip(U.cat);
  if(!c)return false;
