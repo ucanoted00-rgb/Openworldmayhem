@@ -78,7 +78,7 @@ def world_frames(path, nframes):
 
 def yaw_quat(mat):
     # Heading pelo root não animado; o pelvis pode girar muito durante os golpes.
-    fwd=mat[:3,:3] @ np.array([0.,0.,-1.])
+    fwd=mat[:3,:3] @ np.array([0.,1.,0.])
     return R.from_euler('y',math.atan2(-fwd[0],-fwd[2]))
 
 def wrap(a):
