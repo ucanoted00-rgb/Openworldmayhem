@@ -64,3 +64,7 @@ Licença CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) — modificado:
 Carro do minigame (car.js, convert_car.py): "Broken Car" por maregajavier (https://sketchfab.com/maregajavier)
 https://sketchfab.com/3d-models/broken-car-1e19aa6886e24cc18955311bf9ff223f
 Licença CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) — modificado: as 4 rodas foram separadas do corpo (viram peças coletáveis), textura recomprimida em JPEG.
+
+Animações de espada (LMB, M1 e M2): "Sword - slash", "Sword - dash slash" e "Sword - slash B", da Universal Animation Library (Quaternius), disponibilizadas pelo KinemIQ — CC0 1.0 (domínio público).
+Referências: https://kinemiq.app/animations/sword-slash/ ; https://kinemiq.app/animations/sword-dash-slash/ ; https://kinemiq.app/animations/sword-slash-b/
+Modificado: animações retargetadas em espaço de mundo para o rig de 11 ossos do OWM; root motion horizontal removido do personagem e mantido apenas como metadado.
