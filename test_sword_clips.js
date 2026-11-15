@@ -27,6 +27,9 @@ assert.deepEqual(api.order,['hip','upper','hm','LA','LE','RA','RE','LL','LK','RL
 const bounds=[[-.12001,.34001],[-.34001,.00001],[-.72001,-.19999]];
 function smooth(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
 function clipWeight(c,t){return smooth(t/.09)*(1-smooth((t-(c.dur-.20))/.20))}
+function quatEulerXYZ(x,y,z){const c1=Math.cos(x/2),c2=Math.cos(y/2),c3=Math.cos(z/2),s1=Math.sin(x/2),s2=Math.sin(y/2),s3=Math.sin(z/2);return new Quaternion(s1*c2*c3+c1*s2*s3,c1*s2*c3-s1*c2*s3,c1*c2*s3+s1*s2*c3,c1*c2*c3-s1*s2*s3).normalize()}
+const guard={RA:quatEulerXYZ(-.95,.25,-.12),RE:quatEulerXYZ(-1.3,0,0),LA:quatEulerXYZ(-.35,0,.15),LE:quatEulerXYZ(-.9,0,0)};
+const boneIndex={LA:3,LE:4,RA:5,RE:6};
 let totalFrames=0;
 for(const id of ['lmb','m1','m2']){
  const c=api.clips[id];assert(c,'clip ausente: '+id);
@@ -35,7 +38,8 @@ for(const id of ['lmb','m1','m2']){
  assert(c.hit>=0&&c.hit<=c.dur,id+': hit fora da duração');
  assert(Number.isFinite(c.travel)&&c.travel>=0,id+': travel inválido');
  assert(c.speed>0,id+': velocidade inválida');
- let maxAngle=0;
+ const impactTime=c.hit/c.speed;assert(impactTime>=.18&&impactTime<=.26,id+': acerto fora de 0,18–0,26s ('+impactTime.toFixed(3)+'s)');
+ let maxAngle=0,maxGuardAngle=0;
  for(let f=0;f<c.frames;f++){
   const o=f*53,d=c.data;
   for(let k=0;k<53;k++)assert(Number.isFinite(d[o+k]),id+': NaN/Inf frame '+f+' valor '+k);
@@ -52,9 +56,11 @@ for(const id of ['lmb','m1','m2']){
     maxAngle=Math.max(maxAngle,2*Math.acos(Math.max(-1,Math.min(1,dot)))*180/Math.PI);
    }
   }
+  if(f===c.frames-1){for(const name of Object.keys(guard)){const p=o+3+boneIndex[name]*4,g=guard[name],dot=Math.abs(d[p]*g.x+d[p+1]*g.y+d[p+2]*g.z+d[p+3]*g.w);maxGuardAngle=Math.max(maxGuardAngle,2*Math.acos(Math.max(-1,Math.min(1,dot)))*180/Math.PI)}}
   for(let k=0;k<3;k++)assert(d[o+47+k]>=bounds[k][0]&&d[o+47+k]<=bounds[k][1],id+': FP fora do envelope frame '+f);
  }
  assert(maxAngle<90,id+': salto angular '+maxAngle.toFixed(2)+'°');
+ assert(maxGuardAngle<90,id+': último frame distante da guarda ('+maxGuardAngle.toFixed(2)+'°)');
  const qs=Array.from({length:11},()=>new Quaternion()),pos={set(x,y,z){this.x=x;this.y=y;this.z=z;return this}},fp=new Float32Array(6);
  for(let f=0;f<c.frames;f++){
   assert(api.sample(id,f/30,qs,pos,fp),id+': sample falhou frame '+f);
@@ -64,7 +70,7 @@ for(const id of ['lmb','m1','m2']){
  assert.equal(clipWeight(c,c.dur),0,id+': blend não termina na guarda');
  assert(Math.abs(clipWeight(c,c.dur-.20)-1)<1e-6,id+': blend não cobre os últimos 0,20s');
  totalFrames+=c.frames;
- console.log(id+': OK · '+c.frames+' frames · dur '+c.dur.toFixed(3)+'s · hit '+c.hit.toFixed(3)+'s · travel '+c.travel.toFixed(3)+'m · salto máx '+maxAngle.toFixed(2)+'° · blend final→guarda');
+ console.log(id+': OK · '+c.frames+' frames · dur '+c.dur.toFixed(3)+'s · hit '+c.hit.toFixed(3)+'s · travel '+c.travel.toFixed(3)+'m · salto máx '+maxAngle.toFixed(2)+'° · guarda final '+maxGuardAngle.toFixed(1)+'°');
 }
 assert.equal(totalFrames,61);
 console.log('TESTE OK: '+totalFrames+' frames, 53 valores/frame, sem NaN, root XZ=0 e quaternions unitários.');
