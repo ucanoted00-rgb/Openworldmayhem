@@ -3517,7 +3517,7 @@ function altSync(){
  if(b2)b2.classList.toggle('blocking',ALT.block);
  if(sw){sw.classList.toggle('on',ALT.on);sw.setAttribute('aria-pressed',String(ALT.on))}
 }
-function blockSet(v){v=!!v&&ALT.on&&state==='play'&&!COIL.on;if(ALT.block===v)return;ALT.block=v;altSync()}
+function blockSet(v){v=!!v&&ALT.on&&state==='play'&&!COIL.on;if(ALT.block===v)return;ALT.block=v;if(anim.block)anim.block(v);altSync()}
 function altToggle(){if(state!=='play'||COIL.on)return;ALT.on=!ALT.on;if(!ALT.on)blockSet(false);altSync();toast(ALT.on?'Chute / Block':'M1 / M2')}
 function kickPress(){
  if(state!=='play'||COIL.on||tablePlacement||ALT.kickCd>0)return false;
