@@ -4,10 +4,10 @@
 // Troque este número quando substituir uma textura/som/modelo mantendo o MESMO nome de arquivo.
 const ASSET_VERSION = 'v1';
 const ASSET_CACHE = 'owm-assets-' + ASSET_VERSION; // imagens, sons, modelos, CDN (cache primeiro)
-const CODE_CACHE  = 'owm-code';                    // html/js/css do jogo (atualiza sozinho)
+const CODE_CACHE  = 'owm-code-stbb-ui-v2';                    // html/js/css do jogo (atualiza sozinho)
 
 const PRECACHE = [
-  './', 'index.html', 'style.css', 'accounts.css', 'dash-icon.png',
+  './', 'index.html', 'style.css', 'accounts.css', 'stbb-ui.css?v=2', 'dash-icon.png',
   'core.js', 'shaders.js', 'survival.js', 'river-logic.js', 'music.js', 'knife.js',
   'stoneknife.js', 'weapon.js', 'postprocess.js', 'bioflorest.js', 'biodesert.js',
   'zombie.js', 'punch-clips.js', 'sword-clips.js', 'joseph.js', 'avatar.js?v=bones17-idle2',
