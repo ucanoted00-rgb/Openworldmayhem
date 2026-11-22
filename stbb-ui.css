@@ -2066,3 +2066,84 @@ html,body{background:#10090d}
 @media(prefers-reduced-motion:reduce){
   .btn,.tb,.main-hub-item{transition:none}
 }
+
+
+/* STBB UI v4.1 — tela inicial: marca verde neon e Play serifado. */
+.screen.title{
+  isolation:isolate;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg,rgba(28,5,12,.2),rgba(19,4,9,.46) 58%,rgba(12,4,8,.82)) !important;
+}
+.screen.title::before{
+  content:"";
+  position:absolute;
+  inset:-22%;
+  z-index:0;
+  pointer-events:none;
+  opacity:.72;
+  filter:blur(1.4px);
+  background:
+    radial-gradient(ellipse at 42% 54%,transparent 0 34%,rgba(255,35,54,.92) 34.2% 34.55%,transparent 34.9%),
+    radial-gradient(ellipse at 64% 54%,transparent 0 42%,rgba(110,255,48,.82) 42.2% 42.5%,transparent 42.9%),
+    radial-gradient(ellipse at 58% 62%,transparent 0 49%,rgba(139,45,255,.75) 49.2% 49.5%,transparent 49.9%),
+    radial-gradient(ellipse at 48% 36%,transparent 0 56%,rgba(255,190,55,.8) 56.2% 56.45%,transparent 56.9%);
+  transform:rotate(-8deg) scale(1.05);
+}
+.screen.title>*{position:relative;z-index:1}
+.logo{
+  color:#8dff63 !important;
+  font-family:var(--fp) !important;
+  font-style:normal !important;
+  font-weight:700 !important;
+  letter-spacing:.015em;
+  text-shadow:0 0 7px #5dff4a,0 0 18px #39d63e,3px 4px 0 #07140b,7px 8px 0 #000b !important;
+  transform:none !important;
+}
+.logo .m{
+  color:#b1ff80 !important;
+  text-shadow:0 0 8px #73ff43,0 0 17px #45dc35,3px 4px 0 #07140b,7px 8px 0 #000b !important;
+}
+.ed{
+  border:1px solid #9bfa70;
+  border-radius:2px;
+  background:linear-gradient(180deg,#8cef60,#318d38);
+  color:#07120a;
+  font-family:var(--fp);
+  letter-spacing:.14em;
+  box-shadow:0 0 14px #6aff4b44;
+}
+.title-logo-img{
+  filter:drop-shadow(0 0 12px rgba(103,255,67,.45)) drop-shadow(0 5px 0 #0009);
+}
+.screen.title .btn:first-of-type{
+  min-height:42px;
+  height:auto;
+  padding:7px 14px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#fff4e6;
+  font-family:var(--stbb-serif);
+  font-size:clamp(21px,3.2vw,31px);
+  font-weight:700;
+  letter-spacing:.06em;
+  text-shadow:0 2px 4px #000d,0 0 12px #fff3;
+  box-shadow:none;
+}
+.screen.title .btn:first-of-type::before,
+.screen.title .btn:first-of-type::after{
+  color:#e9dec9;
+  opacity:.9;
+}
+.screen.title .btn:first-of-type::before{content:"— ";margin-right:3px}
+.screen.title .btn:first-of-type::after{content:" —";margin-left:3px}
+.screen.title .btn:first-of-type:hover{
+  transform:none;
+  color:#fff;
+  border:0;
+  background:transparent;
+  text-shadow:0 0 12px #fff8,0 2px 4px #000d;
+  box-shadow:none;
+}
+.screen.title .btn:first-of-type:active{transform:scale(.98)}
