@@ -610,3 +610,457 @@ button,input,select,textarea{font-family:var(--f)}
 @media(prefers-reduced-motion:reduce){
   .btn,.tb,.main-hub-item{transition:none}
 }
+
+
+/* ===== STBB OVERHAUL — camada visual reforçada (v2) ===== */
+:root{
+ --stbb-bg:#050b14;
+ --stbb-panel:#0b1725;
+ --stbb-raised:#14283b;
+ --stbb-blue:#44c7f4;
+ --stbb-blue2:#1679ac;
+ --stbb-red:#ef5664;
+ --stbb-red2:#992c43;
+ --stbb-green:#76e0ae;
+ --stbb-gold:#d8e5ed;
+ --stbb-text:#f2f7fb;
+ --stbb-muted:#90a9bc;
+ --ac:#e64e62;
+ --ac2:#48c7f0;
+ --ok:#76e0ae;
+ --ln:rgba(123,177,208,.3);
+ --pn:rgba(5,13,23,.97);
+}
+html,body{background:#050b14;color:var(--stbb-text)}
+body::after{opacity:.035;mix-blend-mode:screen}
+#vig{background:radial-gradient(ellipse at center,#0000 42%,#020711b8 100%)}
+
+/* Menus parecem telas do mesmo jogo: moldura de aço, azul frio e vermelho de combate. */
+.screen.solid{
+ background:
+  linear-gradient(135deg,rgba(41,101,138,.12),transparent 35%),
+  radial-gradient(ellipse at 82% 10%,rgba(25,126,177,.18),transparent 42%),
+  linear-gradient(155deg,#101f30,#081321 62%,#050b13);
+}
+.screen.dim{
+ background:rgba(2,7,13,.9);
+ -webkit-backdrop-filter:blur(10px) saturate(1.1);
+ backdrop-filter:blur(10px) saturate(1.1);
+}
+.screen h2{
+ position:relative;
+ width:min(100%,920px);
+ padding:0 0 10px 12px;
+ border:0;
+ border-left:3px solid var(--stbb-blue);
+ border-bottom:1px solid rgba(72,199,240,.42);
+ color:#f4f8fb;
+ font:900 clamp(18px,2.7vw,25px)/1.05 var(--f);
+ letter-spacing:.14em;
+ text-shadow:0 2px 14px #000;
+}
+.screen h2::first-letter{color:#f16a76}
+.screen .dsc{color:#a7bdcd}
+.screen .list{
+ border:1px solid rgba(72,160,200,.4);
+ border-radius:5px;
+ background:linear-gradient(180deg,rgba(5,15,26,.97),rgba(8,22,36,.92));
+ box-shadow:inset 0 1px 0 #ffffff10,0 14px 34px #0008;
+}
+.screen .list::-webkit-scrollbar-thumb{background:linear-gradient(#55c9ed,#176c98);border-radius:4px}
+.screen .fld label{
+ color:#a9c5d5;
+ font:900 10px var(--f);
+ letter-spacing:.14em;
+ text-transform:uppercase;
+}
+.screen .fld input,.screen input[type=text],.screen input[type=number],
+.screen input[type=password],.screen textarea,.screen select{
+ min-height:38px;
+ border:1px solid rgba(91,171,210,.5);
+ border-radius:4px;
+ background:linear-gradient(180deg,#06101b,#0b1b2a);
+ color:#f3f8fb;
+ box-shadow:inset 0 2px 8px #0009,0 1px 0 #ffffff0a;
+}
+.screen .fld input:focus,.screen input:focus,.screen textarea:focus,.screen select:focus{
+ border-color:var(--stbb-blue);
+ box-shadow:0 0 0 2px #43c8f22b,inset 0 2px 8px #0009;
+ outline:0;
+}
+.screen input[type=range]{accent-color:var(--stbb-blue)}
+
+/* Botões maiores, mais contrastados e com relevo. */
+.btn{
+ border:1px solid rgba(102,174,209,.6);
+ border-radius:4px;
+ background:
+  linear-gradient(180deg,#ffffff13,transparent 42%),
+  linear-gradient(180deg,#1c3b55,#10283d 55%,#0a1a2a);
+ color:#eff8fd;
+ font:900 12px/1.12 var(--f);
+ letter-spacing:.085em;
+ text-transform:uppercase;
+ box-shadow:0 4px 0 #02060c,inset 0 1px 0 #ffffff24,0 8px 18px #0007;
+}
+.btn:hover:not(:disabled),.btn:focus-visible{
+ border-color:#6bd9fa;
+ background:linear-gradient(180deg,#285779,#143650);
+ color:#fff;
+ transform:translateY(-1px);
+ box-shadow:0 5px 0 #02060c,inset 0 1px 0 #ffffff30,0 0 14px #39b9ed25;
+ outline:0;
+}
+.btn:active:not(:disabled){transform:translateY(2px);filter:brightness(1.15);box-shadow:0 1px 0 #02060c,inset 0 2px 5px #000a}
+.btn.tab.on,.btn.on.tab,.inv-tabs .btn.on,.bench-tabs .btn.on,.cr-tabs .btn.on{
+ color:#fff;
+ border-color:#55d5fa;
+ background:linear-gradient(180deg,#26789f,#12405e);
+ box-shadow:0 3px 0 #061522,inset 0 1px 0 #ffffff35,0 0 14px #3dc5f32b;
+}
+.btn.primary,.cr-actions .btn.primary{
+ border-color:#e16a73;
+ background:linear-gradient(180deg,#b84958,#6e283a);
+ color:#fff;
+}
+.btn.danger,.acc-row .btn.mini.warn{
+ border-color:#e16b75;
+ background:linear-gradient(180deg,#a93e4e,#561f30);
+ color:#fff;
+}
+#toast{
+ border:1px solid #63c8e7;
+ border-radius:4px;
+ background:linear-gradient(180deg,#17344a,#071523);
+ color:#f0fbff;
+ box-shadow:0 10px 30px #000b,0 0 16px #42c3ef26;
+ font:900 12px var(--f);
+ letter-spacing:.07em;
+}
+
+/* Moldura inferior do HUD, sem bloquear os toques na tela. */
+#hud::after{
+ content:"";
+ position:absolute;
+ z-index:0;
+ left:0;right:0;bottom:0;height:190px;
+ pointer-events:none;
+ background:linear-gradient(0deg,rgba(2,8,16,.45),rgba(2,8,16,.16) 45%,transparent);
+}
+#hud>*{z-index:1}
+#hud #look{z-index:0}
+#hint{
+ border:1px solid rgba(89,174,212,.42);
+ border-radius:4px;
+ background:linear-gradient(180deg,rgba(14,35,52,.96),rgba(4,14,24,.96));
+ box-shadow:0 5px 20px #0009,inset 0 1px 0 #ffffff18;
+ color:#dcebf4;
+ font:900 10px var(--f);
+ letter-spacing:.05em;
+}
+#hint kbd{
+ border:1px solid #4dbfe8;
+ border-radius:3px;
+ background:linear-gradient(#28617e,#12344b);
+ color:#e4faff;
+ font:900 10px var(--f);
+ box-shadow:0 2px 0 #020811;
+}
+
+/* Status bars com moldura metálica e preenchimento de alto contraste. */
+#health-wrap{
+ width:min(270px,50vw);
+ filter:drop-shadow(0 4px 5px #000c);
+}
+#health-bar,#stamina-bar{
+ border:1px solid rgba(171,208,226,.75);
+ border-radius:3px;
+ background:linear-gradient(180deg,#030912,#172a3a);
+ box-shadow:0 0 0 1px #02060b,inset 0 2px 5px #000b;
+}
+#health-bar{height:24px}
+#stamina-bar{height:15px}
+#health-fill{background:linear-gradient(180deg,#ff9a9e,#e24958 48%,#9b263b)}
+#stamina-fill{background:linear-gradient(180deg,#fff0a2,#efbe58 52%,#a86b2b)}
+#health-bar::after,#stamina-bar::after{
+ background:linear-gradient(180deg,#ffffff35,transparent 44%,#0005),
+ repeating-linear-gradient(90deg,transparent 0,transparent calc(10% - 1px),#02060c55 calc(10% - 1px),#02060c55 10%);
+}
+#health-text,#stamina-text{
+ color:#f7fbff;
+ font:900 11px var(--f);
+ letter-spacing:.09em;
+ text-shadow:0 2px 3px #000,1px 0 #000,-1px 0 #000;
+}
+#survival-bars{filter:drop-shadow(0 3px 5px #000b)}
+.survival-bar{
+ border:1px solid rgba(151,194,217,.68);
+ border-radius:3px;
+ background:linear-gradient(#030a12,#1b3448);
+ box-shadow:inset 0 1px 3px #000b,0 0 0 1px #02060b;
+}
+#hunger-fill{background:linear-gradient(180deg,#ffe19b,#d18d43 55%,#7b4b25)}
+#thirst-fill{background:linear-gradient(180deg,#b3efff,#3db9e6 55%,#176c9b)}
+.survival-bar::after{background:linear-gradient(180deg,#ffffff3b,transparent 46%,#0005)}
+
+/* Controles mobile seguem o mesmo design da barra de habilidades. */
+#hud .tb{
+ border:1px solid rgba(116,191,222,.75);
+ border-radius:12px;
+ background:
+  linear-gradient(145deg,#ffffff18,transparent 42%),
+  linear-gradient(180deg,#1b3d57 0%,#102a40 58%,#071727 100%);
+ color:#effaff;
+ font:900 12px/1 var(--f);
+ letter-spacing:.08em;
+ text-shadow:0 2px 3px #000c;
+ box-shadow:0 5px 0 #02070d,inset 0 1px 0 #ffffff2d,0 8px 16px #0008;
+ -webkit-backdrop-filter:blur(5px);
+ backdrop-filter:blur(5px);
+}
+#hud .tb:active{
+ transform:translateY(3px) scale(.97);
+ border-color:#b8f1ff;
+ background:linear-gradient(180deg,#3c7898,#17415e);
+ box-shadow:0 1px 0 #02070d,inset 0 2px 5px #0009;
+}
+#bPunch{
+ border:2px solid #e5edf3!important;
+ border-radius:14px!important;
+ background:linear-gradient(145deg,#46596b,#162a3c 70%,#071321)!important;
+ box-shadow:0 5px 0 #02070d,0 0 16px #a7c7dc35,inset 0 1px 0 #ffffff45!important;
+}
+#bPunch .punch-label{color:#fff}
+#bM1,#bM2{
+ display:none;
+ border-radius:13px!important;
+ overflow:hidden;
+}
+.touch #bM1,.touch #bM2{display:flex}
+#bM1{
+ border:2px solid #50d0fa!important;
+ background:
+  radial-gradient(circle at 50% 34%,#337da2 0%,#164665 45%,#071b2b 100%)!important;
+ box-shadow:0 5px 0 #02070d,0 0 17px #40c4f044,inset 0 1px 0 #ffffff40!important;
+}
+#bM2{
+ border:2px solid #f17b82!important;
+ background:
+  radial-gradient(circle at 50% 34%,#a84453 0%,#602738 48%,#21101d 100%)!important;
+ box-shadow:0 5px 0 #02070d,0 0 17px #e85d6b44,inset 0 1px 0 #ffffff38!important;
+}
+#bM1 .cmb-k,#bM2 .cmb-k{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:3px;
+ width:100%;
+ color:#fff;
+ font:1000 17px/1 var(--f);
+ letter-spacing:.02em;
+ text-shadow:0 2px 5px #000d,0 0 9px #ffffff55;
+}
+#bM1 .cmb-d,#bM2 .cmb-d{
+ margin-top:2px;
+ padding:3px 6px;
+ border:1px solid #ffffff36;
+ border-radius:3px;
+ background:rgba(0,0,0,.48);
+ color:#fff;
+ font:900 10px/1 var(--f);
+ letter-spacing:.04em;
+}
+#bM1 .cmb-d::after,#bM2 .cmb-d::after{content:" DMG"}
+#bJump,#bSprint,#bInv,#bLock,#bShiftLock,#bSwap{
+ border-radius:11px;
+ border-color:rgba(112,190,220,.66);
+}
+#bJump{background:linear-gradient(180deg,#2a536d,#0c2235)}
+#bSprint{color:#d8f5ff}
+#bSprint.on{
+ border-color:#79e6ff;
+ background:linear-gradient(180deg,#28799a,#12435f);
+ box-shadow:0 3px 0 #061522,0 0 15px #42c6ee55;
+ color:#fff;
+}
+#bInv{color:#d9f4ff}
+#bPause{
+ border:2px solid #67cbed;
+ border-radius:9px;
+ background:linear-gradient(180deg,#1f4b67,#0b1d30);
+ color:#e8faff;
+ box-shadow:0 4px 0 #02070d,0 0 14px #42c5ef30;
+}
+#bDash{
+ border:2px solid #d9bd7a;
+ border-radius:13px;
+ background:linear-gradient(180deg,#38566a,#101e2d);
+ box-shadow:0 5px 0 #02070d,0 0 15px #e2c27a30;
+}
+#bDash img{opacity:.88;filter:saturate(.8) contrast(1.12)}
+#bDash::after{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:linear-gradient(145deg,#ffffff20,transparent 45%,#0007)}
+#bDash .dash-label,#bDash .dash-cd{z-index:2}
+#bDash .dash-label{color:#fff1c6;opacity:1}
+#bDash .dash-cd{background:rgba(1,7,13,.82);color:#fff}
+#bDash.cooldown img{filter:blur(2px) grayscale(1);opacity:.2}
+#bLock{border-color:#d96b75;color:#ffb8bd}
+#bLock.on{background:linear-gradient(#a84959,#4a1b2d);border-color:#ff9da5;color:#fff;box-shadow:0 3px 0 #210a13,0 0 16px #e24b63}
+#bShiftLock.on,#bSwap.on{background:linear-gradient(#307d9e,#123d58);border-color:#71dbf5;color:#fff}
+#joy{
+ border:2px solid rgba(105,199,231,.72);
+ border-radius:50%;
+ background:radial-gradient(circle,#254e67 0 24%,#102b40 25% 59%,#091827 60% 100%);
+ box-shadow:inset 0 0 0 3px #ffffff18,inset 0 0 0 8px #0003,0 5px 17px #000b;
+}
+#knob{
+ border:2px solid #d9f6ff;
+ background:radial-gradient(circle at 34% 26%,#f4fdff,#77cde7 58%,#27617d);
+ box-shadow:inset 0 1px 2px #fff9,0 3px 8px #000b;
+}
+#collect{
+ border:1px solid #65d6f5;
+ border-radius:4px;
+ background:linear-gradient(#286784,#0a273c);
+ color:#effbff;
+ font:900 12px var(--f);
+ letter-spacing:.1em;
+ text-transform:uppercase;
+ box-shadow:0 4px 12px #000a;
+}
+
+/* Ataques, combo e eventos rápidos ficam mais legíveis. */
+#combo-ui{color:#8ce4ff;text-shadow:0 2px #000,0 0 14px #36c4f2aa}
+#combo-ui.hv{color:#ffb1ad;text-shadow:0 2px #000,0 0 15px #eb626e}
+#combo-ui.fin{color:#fff0bd}
+#slashfx{--c1:rgba(235,250,255,.98);--c2:rgba(75,210,250,.96);--g:rgba(50,185,240,.85)}
+#slashfx.hv{--c2:rgba(255,166,145,.98);--g:rgba(238,74,91,.8)}
+#qte{
+ border:1px solid #5bdaee;
+ border-radius:5px;
+ background:linear-gradient(180deg,rgba(15,41,55,.98),rgba(3,13,23,.99));
+ box-shadow:0 12px 36px #000c,0 0 20px #39c9ed22,inset 0 1px 0 #ffffff20;
+}
+#qte-t{color:#e8fbff}
+#qte-n{border-radius:3px;background:linear-gradient(#a0f0ff,#2f9ac2);color:#06202d}
+#qte-pips i{border-radius:2px}
+#qte-pips i.on{background:linear-gradient(#a7f2ff,#2ea2d2);box-shadow:0 0 9px #45c8f1aa}
+#qte.good,#qte.win{border-color:#78e5b1}
+#qte.miss{border-color:#ed6873}
+
+/* Inventário e crafting deixam de parecer caixas genéricas. */
+.pn,.screen[data-scr=inv] .inv-shell,.bench-layout{
+ background:linear-gradient(145deg,rgba(18,39,57,.99),rgba(4,13,23,.99));
+ border:1px solid rgba(89,175,213,.46);
+ border-radius:5px;
+ box-shadow:0 20px 60px #000c,inset 0 1px 0 #ffffff17;
+}
+.pi{background:transparent}
+.inv-header{border-bottom:1px solid rgba(77,193,232,.38)}
+.inv-head-title{color:#e6f8ff;letter-spacing:.12em;text-transform:uppercase}
+.inv-summary,.ih,.chint,.bench-desc,.bench-hint{color:#9db6c7}
+.inv-tabs .btn,.bench-tabs .btn{border-radius:4px}
+.inv-equipment-col{border:1px solid #4a7891;border-radius:4px;background:linear-gradient(145deg,#ffffff0c,#0008)}
+.slot{
+ border:1px solid rgba(91,172,207,.48);
+ border-radius:4px;
+ background:linear-gradient(145deg,#1b3b52,#091827 78%);
+ box-shadow:inset 0 1px 0 #ffffff18,0 2px 0 #02080f;
+}
+.slot:hover{border-color:#71d7f6;box-shadow:0 0 11px #3ec5ef38}
+.slot.sel,.slot.res.on{
+ border-color:#e5be71;
+ background:linear-gradient(145deg,#73592e,#172d40);
+ box-shadow:inset 0 0 0 1px #ffe2a533,0 0 12px #e9bd6433;
+}
+.slot b{color:#fff;text-shadow:0 2px 4px #000}
+.ipop{background:rgba(1,5,10,.84);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.ipc{
+ background:linear-gradient(145deg,#1b3b53,#081827);
+ border:1px solid #58b8dc;
+ border-radius:5px;
+ box-shadow:0 16px 44px #000c,inset 0 1px 0 #ffffff1c;
+}
+.ipn{color:#e9f9ff}
+.ipq,.ipd{color:#a9c1d0}
+.ips span{border-radius:3px;background:#39bde51f;color:#b9efff}
+.ipsp{border-radius:4px;background:#06121e;border:1px solid #3b718d}
+.bk-card{border:1px solid #345e76;border-radius:4px;background:linear-gradient(145deg,#19364d,#081827)}
+.bk-n{color:#e7f7ff}
+.bk-tag{color:#f0d38c}
+.bk-chip{border-radius:3px;background:#071421;border-color:#34586e}
+.bk-chip.ok{color:#9ae7bf;border-color:#4a9e78}
+.bk-chip.no{color:#ff9ca5;border-color:#9b4655}
+
+/* Criação de personagem e arquétipos. */
+.screen.creator{background:linear-gradient(145deg,#10283a,#071320 70%,#050b13)}
+.cr-left{border:1px solid #4d98b8;border-radius:5px;background:radial-gradient(ellipse at 50% 38%,#26546d66,#030a13 76%)}
+.cr-sec h3{color:#b8d8e8}
+.cr-tabs .btn{border-radius:4px}
+.cr-card{
+ border:1px solid #3f718b;
+ border-radius:4px;
+ background:linear-gradient(145deg,#1b3a51,#091827);
+}
+.cr-card:hover{border-color:#7ddcf4}
+.cr-card.on{border-color:#e9c475;background:linear-gradient(145deg,#66532e,#152f43);box-shadow:0 0 13px #e9c47538}
+.cr-arch-panel{border:1px solid #4ca6c7;border-radius:4px;background:linear-gradient(145deg,#19394e,#071522);box-shadow:inset 0 1px 0 #ffffff18,0 9px 24px #0008}
+.cr-arch-kicker{color:#81d7f3}
+.cr-arch-name{color:#effaff}
+.cr-arch-odd{border-radius:4px;border-color:#42728a;background:#0a1c2b}
+.cr-rarity{border-radius:3px}
+.cr-arch-spin{border-color:#e7c06e!important;background:linear-gradient(#a17b3e,#51391d)!important;color:white!important}
+
+/* Conta, amigos, menu principal e navegação. */
+.acc-row{border:1px solid #2d536b;border-radius:4px;background:linear-gradient(90deg,#1a3a5199,#081827cc)}
+.acc-code-row{border:1px solid #4bbde3;border-radius:4px;background:linear-gradient(145deg,#183b54,#071827)}
+.acc-code,.acc-h{color:#9be6ff}
+.acc-dot.on{background:#77e2ac;box-shadow:0 0 9px #77e2acaa}
+.acc-status.good,.acc-t p+p.playing{color:#84e4ad}
+.acc-warning{color:#f3d48f}
+.acc-row .btn.mini.ok{border-color:#69cf9b;background:linear-gradient(#347d61,#164434)}
+.main-hub{background:radial-gradient(ellipse at 80% 0%,#1b526f4d,transparent 42%),linear-gradient(145deg,#0c2031,#050b14 72%)}
+.main-hub-nav{background:linear-gradient(180deg,#061321,#0c2334);border-right:1px solid #3da4ca66}
+.main-hub-item{border-radius:4px;color:#a8bfce}
+.main-hub-item.on{border:1px solid #50c9ee;border-radius:4px;color:#f2fbff;background:linear-gradient(145deg,#2b8dbf55,#102a3c);box-shadow:inset 3px 0 #62d8fa,0 5px 16px #0008}
+.main-hub-close{border:1px solid #57bedf;border-radius:4px;background:linear-gradient(#245573,#0d2538);color:#e5faff}
+.main-hub-content>.screen h2{border-bottom-color:#54bfe044}
+
+/* Loja, tokens, minigames e estúdio. */
+.tk-list .tk-item,.tk-side,.tk-card,.mg-panel,.mg-box,.mg-hud-panel{border-color:#3d7894;background-color:rgba(7,21,34,.97)}
+.tk-item.on,.tk-item.active{border-color:#5ad0f1;background:linear-gradient(145deg,#235b78,#0b2639)}
+.screen.mg button:not(.mg-cine-skip),.screen.tokens button{border-radius:4px}
+.as .btn,.aed-actions .btn,.aed-bones .btn{border-radius:4px}
+.as .btn.tab.on,.aed-bones .btn.on{border-color:#5ad2f0;background:linear-gradient(#267b9e,#103850);color:#effcff}
+.aed-preview,.aed-timeline{border-color:#397d9b;border-radius:4px;background:#081827}
+
+/* Editor HUD atualizado sem alterar posições, âncoras ou lógica de drag. */
+.hud-ed-bg{background:rgba(1,7,13,.58)}
+.hud-ed-safe{border-color:#54c8e877}
+.hud-ed-h{border:1px dashed #a2eaff;border-radius:5px;background:#1c52723d}
+.hud-ed-h.sel{border:2px solid #ffe09a;background:#f3c66a2a;box-shadow:0 0 0 3px #f3c66a45,0 0 20px #f3c66a55}
+.hud-ed-h.drag{background:#f3c66a55}
+.hud-ed-h.collect{border-radius:4px;background:#0b2a3e}
+.hud-ed-tag{border:1px solid #b8eeff;border-radius:3px;background:#24799d;color:#fff}
+.hud-ed-guide{background:#6ad9f5;box-shadow:0 0 7px #53c8ee}
+.hud-ed-top{background:linear-gradient(#030c16f7,#07192bd9 72%,transparent)}
+.hud-ed-tbtn,.hud-ed-pbtn,.hud-ed-mi{border:1px solid #4b8daa;border-radius:4px;background:linear-gradient(#1d4a64,#0a2033);color:#effaff}
+.hud-ed-tbtn.save{border-color:#dfb86d;background:linear-gradient(#8e6935,#4a321a);color:#fff5da}
+.hud-ed-menu,.hud-ed-panel{border:1px solid #4ab7da;border-radius:4px;background:linear-gradient(145deg,#17384e,#071522);box-shadow:0 12px 32px #000d}
+.hud-ed-hint{border:1px solid #4bb7d8;border-radius:4px;background:#071a2b;color:#e6f8ff}
+.hud-ed-name{color:#8fe4ff}
+
+/* Responsivo: somente aparência; posições e hitboxes dos controles continuam do CSS original. */
+@media(max-width:640px){
+ .screen h2{font-size:clamp(15px,4vw,19px)}
+ .btn{font-size:11px}
+ #health-wrap{width:min(210px,48vw)}
+ #health-bar{height:21px}
+ #stamina-bar{height:14px}
+ #health-text{font-size:10px}
+ #stamina-text{font-size:9px}
+ #hint{font-size:9px}
+}
+@media(orientation:landscape) and (max-height:520px){
+ .screen h2{padding-bottom:5px;margin-bottom:3px}
+ #health-wrap{gap:3px}
+}
