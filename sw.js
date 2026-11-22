@@ -2,12 +2,12 @@
    Guarda tudo no aparelho: scripts, texturas, sons, modelos, fontes e bibliotecas do CDN. */
 
 // Troque este número quando substituir uma textura/som/modelo mantendo o MESMO nome de arquivo.
-const ASSET_VERSION = 'v1';
+const ASSET_VERSION = 'v2';
 const ASSET_CACHE = 'owm-assets-' + ASSET_VERSION; // imagens, sons, modelos, CDN (cache primeiro)
-const CODE_CACHE  = 'owm-code-stbb-ui-v2';                    // html/js/css do jogo (atualiza sozinho)
+const CODE_CACHE  = 'owm-code-stbb-ui-v3';                    // html/js/css do jogo (atualiza sozinho)
 
 const PRECACHE = [
-  './', 'index.html', 'style.css', 'accounts.css', 'stbb-ui.css?v=2', 'dash-icon.png',
+  './', 'index.html', 'style.css', 'accounts.css', 'stbb-ui.css?v=3', 'dash-icon.png',
   'core.js', 'shaders.js', 'survival.js', 'river-logic.js', 'music.js', 'knife.js',
   'stoneknife.js', 'weapon.js', 'postprocess.js', 'bioflorest.js', 'biodesert.js',
   'zombie.js', 'punch-clips.js', 'sword-clips.js', 'joseph.js', 'avatar.js?v=bones17-idle2',
@@ -27,7 +27,7 @@ const CDN = [
   'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js',
   'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js',
   'https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js',
-  'https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;0,700;0,800;1,900&family=Pixelify+Sans:wght@400;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700;800;900&family=Pixelify+Sans:wght@400;700&display=swap'
 ];
 
 const CODE_EXT = /\.(?:html|js|css|json|webmanifest)$/i;
