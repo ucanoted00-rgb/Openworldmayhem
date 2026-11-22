@@ -1414,6 +1414,42 @@ const JP={PRICE:170,FUEL:100,DRAIN:4.5,REGEN_GROUND:40,REGEN_AIR:8,UP_V:7.5,UP_A
 const DASH={DURATION:.308,SPEED:15.5*1.1,COOLDOWN:6,TRAIL_STEP:.035}; // duração +40%: aumenta a distância sem tornar o dash mais brusco
 const dashBtn=$('#bDash'),dashCdEl=$('#dash-cd'),dashFlashEl=$('#dash-flash');
 const JP_ANIM_ZERO_VEL=new THREE.Vector3();   // voo: mantém o idle sem a passada de caminhada/corrida
+/* ---------- Animação direcional do jetpack ----------
+   Camada aditiva sobre o idle do avatar. Usa a velocidade REAL projetada no referencial
+   da câmera, por isso as transições acompanham a inércia do voo e não piscam com o joystick. */
+const JP_FLIGHT_POSE={f:0,s:0,on:0};
+function jpApplyFlightPose(dt,active){
+ const b=anim&&anim.bones;if(!b)return;
+ let tf=0,ts=0;
+ if(active){
+  const sy=Math.sin(P.yaw),cy=Math.cos(P.yaw);
+  const forward=P.vel.x*-sy+P.vel.z*-cy;
+  const side=P.vel.x*cy-P.vel.z*sy;
+  const ref=Math.max(6,JP.FLY_SPEED*(JP.FLY_BOOST||1)*.72);
+  tf=cl(forward/ref,-1,1);ts=cl(side/ref,-1,1);
+ }
+ const k=1-Math.exp(-Math.max(0,dt)*5.5),st=JP_FLIGHT_POSE;
+ st.f+=(tf-st.f)*k;st.s+=(ts-st.s)*k;st.on+=((active?1:0)-st.on)*(1-Math.exp(-Math.max(0,dt)*9));
+ const w=cl(st.on,0,1),f=st.f*w,s=st.s*w,move=cl(Math.hypot(st.f,st.s),0,1)*w,hover=w*(1-cl(Math.hypot(st.f,st.s),0,1));
+ if(w<.001)return;
+ const add=(bone,x=0,y=0,z=0)=>{if(bone)bone.rotation.set(bone.rotation.x+x,bone.rotation.y+y,bone.rotation.z+z)};
+ // Hover: peito estável, braços discretamente abertos e joelhos destravados quase nada.
+ // Frente/trás: tronco inclina, braços acompanham o fluxo e as coxas ficam em linha com o corpo.
+ // Lados: inclinação lateral e pequena torção do peito; membros compensam sem virar pose de queda.
+ const bodyPitch=f>=0?f*.47:f*.36;
+ add(b.upper,.035*hover+bodyPitch,-s*.11,s*.33);
+ add(b.hip,-f*.075, s*.025, s*.055);
+ add(b.LA,-.24*hover-f*.74-s*.08,0,.24*hover+s*.20+Math.abs(s)*.14);
+ add(b.RA,-.24*hover-f*.74+s*.08,0,-.24*hover+s*.20-Math.abs(s)*.14);
+ add(b.LE,-.20*hover-f*.18-s*.08,0,0);
+ add(b.RE,-.20*hover-f*.18+s*.08,0,0);
+ add(b.LL,.015*hover+f*.39,0,s*.13);
+ add(b.RL,.015*hover+f*.39,0,s*.13);
+ add(b.hm,-f*.055,-s*.035,0);
+ // Joelhos praticamente estendidos durante as quatro poses; blend suave na entrada/saída.
+ if(b.LK)b.LK.rotation.x+=(.012-b.LK.rotation.x)*w*.96;
+ if(b.RK)b.RK.rotation.x+=(.012-b.RK.rotation.x)*w*.96;
+}
 /* Movimento mais solto (estilo jogos de Roblox, mas equilibrado): pulo com "coyote time" (pula até .12 s depois de sair da beirada), pulo "bufferizado"
    (aperte um pouco antes de pousar), pulo de altura variável (solte cedo = pulo baixo), controle moderado no ar, queda mais rápida que a subida. Sem pulo duplo. */
 const JUMP_V=8.8*Math.sqrt(1.3),   // pulo +30% mais alto
@@ -1830,7 +1866,7 @@ function wvReward(cent,pts){
  lobbySetStats(cent?(cur.cent||0)+cent:null,pts?(cur.pontos||0)+pts:null);
 }
 const STM={on:false,wave:0,t:0,clr:false,inter:0,hudA:'',hudB:'',hudC:''};
-const VH={tpl:null,promise:null,failed:false,procedural:false,proceduralWarned:false,list:[],shopEl:null,shopV:null};   // veículos da Legião Vermelha + fallback procedural caso o pack GLTF não esteja no repositório
+const VH={tpl:null,promise:null,failed:false,list:[],shopEl:null,shopV:null,zipUrls:[]};   // modelos GLTF originais carregados de um ZIP na raiz do repositório + loja
 (function(){
  if(document.getElementById('wave-hud-css'))return;
  const css=document.createElement('style');css.id='wave-hud-css';
@@ -2112,9 +2148,9 @@ function fbSpawnBossWave(){
  }).catch(e=>{STM.fbWait=false;console.error('[OWM] Farben Tire:',e);toast('Não consegui carregar o Farben Tire. '+(e&&e.message||''))});
 }
 /* ---------- VEÍCULOS DA LEGIÃO VERMELHA + LOJA ----------
-   GLTF original é usado quando disponível em VEHICLES_GLTF ou vehicles/scene.gltf.
-   Se o pack não estiver incluído no repositório, o jogo constrói substitutos 3D leves no próprio game.js.
-   Quando a onda ANTES do chefe (4, 9, 14...) é vencida, Interceptor, Thresher e Scorpius chegam de longe e POUSAM perto do jogador.
+   Pacote "Destiny 2 Red Legion Vehicles": deixe destiny_2_red_legion_vehicles_part23.zip na RAIZ do repositório.
+   O jogo lê scene.gltf, scene.bin e as texturas diretamente do ZIP em memória; nenhuma pasta precisa ser criada.
+   Quando a onda ANTES do chefe (4, 9, 14...) é vencida, o Interceptor, o Thresher e o Scorpius chegam voando de longe, descem e POUSAM perto do jogador.
    · Chegando perto de qualquer um abre a LOJA (vazia por enquanto); afastando, fecha.
    · Ficam VH_STAY segundos (contados depois que o último pousou), decolam e somem. SÓ ENTÃO a onda do chefe começa. */
 const VH_STAY=50,VH_DESC=1.7,VH_H=3.4;
@@ -2139,25 +2175,56 @@ const VH_PRESET=[   // pre: prefixo do nome no glTF · n: nome na loja · len: c
  'body.owm-cin-on #vh-shop{display:none!important}';
  document.head.appendChild(css);
 })();
+/* Leitor ZIP pequeno: o pacote fica como UM arquivo na raiz do repositório.
+   Lê os arquivos armazenados/deflate diretamente em memória, sem extrair pasta no servidor. */
+function vhZipDirectory(buffer){
+ const dv=new DataView(buffer),u8=new Uint8Array(buffer),min=Math.max(0,u8.length-65557);let eocd=-1;
+ for(let p=u8.length-22;p>=min;p--)if(dv.getUint32(p,true)===0x06054b50){eocd=p;break}
+ if(eocd<0)throw new Error('ZIP inválido: diretório central não encontrado');
+ const count=dv.getUint16(eocd+10,true);let off=dv.getUint32(eocd+16,true);const out=new Map(),dec=new TextDecoder();
+ for(let i=0;i<count;i++){
+  if(dv.getUint32(off,true)!==0x02014b50)throw new Error('ZIP inválido: entrada corrompida');
+  const method=dv.getUint16(off+10,true),size=dv.getUint32(off+20,true),nameLen=dv.getUint16(off+28,true),extraLen=dv.getUint16(off+30,true),commentLen=dv.getUint16(off+32,true),local=dv.getUint32(off+42,true);
+  const name=dec.decode(u8.subarray(off+46,off+46+nameLen));out.set(name,{method,size,local});off+=46+nameLen+extraLen+commentLen;
+ }
+ return out;
+}
+async function vhZipRead(buffer,entry){
+ if(!entry)throw new Error('Arquivo ausente no ZIP de veículos');
+ const dv=new DataView(buffer),u8=new Uint8Array(buffer),p=entry.local;
+ if(dv.getUint32(p,true)!==0x04034b50)throw new Error('ZIP inválido: cabeçalho local corrompido');
+ const start=p+30+dv.getUint16(p+26,true)+dv.getUint16(p+28,true),src=u8.subarray(start,start+entry.size);
+ if(entry.method===0)return src.slice();
+ if(entry.method!==8)throw new Error('Compressão ZIP não suportada: '+entry.method);
+ if(typeof DecompressionStream==='undefined')throw new Error('Este navegador não suporta descompactação ZIP (DecompressionStream)');
+ const stream=new Blob([src]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+ return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function vhZipGLTF(){
+ const response=await fetch('destiny_2_red_legion_vehicles_part23.zip',{cache:'force-cache'});
+ if(!response.ok)throw new Error('Não encontrei destiny_2_red_legion_vehicles_part23.zip na raiz do repositório (HTTP '+response.status+')');
+ const buffer=await response.arrayBuffer(),files=vhZipDirectory(buffer),dec=new TextDecoder();
+ const gltf=JSON.parse(dec.decode(await vhZipRead(buffer,files.get('scene.gltf'))));
+ const makeURL=async(path,type)=>{const bytes=await vhZipRead(buffer,files.get(path));const url=URL.createObjectURL(new Blob([bytes],{type}));VH.zipUrls.push(url);return url};
+ for(const b of gltf.buffers||[])if(b.uri)b.uri=await makeURL(b.uri,'application/octet-stream');
+ for(const im of gltf.images||[])if(im.uri){const ext=(im.uri.split('.').pop()||'png').toLowerCase(),mime=ext==='jpg'||ext==='jpeg'?'image/jpeg':'image/png';im.uri=await makeURL(im.uri,mime)}
+ return gltf;
+}
+function vhReleaseZipURLs(){for(const url of VH.zipUrls)URL.revokeObjectURL(url);VH.zipUrls.length=0}
 function vhLoad(){
  if(VH.promise)return VH.promise;
  VH.promise=new Promise((res,rej)=>{
-  const fallback=e=>{
-   VH.tpl=null;VH.procedural=true;
-   if(!VH.proceduralWarned){VH.proceduralWarned=true;console.warn('[OWM] Pack vehicles/scene.gltf indisponível; usando veículos 3D procedurais.',e||'sem pack')}
-   res(null);
-  };
-  if(!THREE.GLTFLoader){fallback(new Error('GLTFLoader indisponível'));return}
+  if(!THREE.GLTFLoader){rej(new Error('GLTFLoader indisponível'));return}
   const ok=g=>{try{
    g.scene.traverse(o=>{if(!o.isMesh)return;o.castShadow=false;o.receiveShadow=false;o.frustumCulled=false;
     for(const m of(Array.isArray(o.material)?o.material:[o.material]))if(m&&m.transparent)m.depthWrite=false});
-   VH.tpl=g.scene;VH.procedural=false;res(g.scene)}catch(e){fallback(e)}};
-  const bad=e=>fallback(e||new Error('falha ao ler os veículos'));
-  const src=window.VEHICLES_GLTF;
-  if(src)new THREE.GLTFLoader().parse(typeof src==='string'?src:JSON.stringify(src),'',ok,bad);
-  else new THREE.GLTFLoader().load('vehicles/scene.gltf',ok,undefined,bad);
+   VH.tpl=g.scene;vhReleaseZipURLs();res(g.scene)}catch(e){vhReleaseZipURLs();rej(e)}};
+  const bad=e=>{vhReleaseZipURLs();rej(e||new Error('falha ao ler os veículos'))};
+  const parse=src=>new THREE.GLTFLoader().parse(typeof src==='string'?src:JSON.stringify(src),'',ok,bad);
+  if(window.VEHICLES_GLTF)parse(window.VEHICLES_GLTF);
+  else vhZipGLTF().then(parse,bad);
  });
- VH.promise.catch(()=>{VH.promise=null});
+ VH.promise.catch(()=>{VH.promise=null;vhReleaseZipURLs()});
  return VH.promise;
 }
 function vhFind(root,pre){let f=null;root.traverse(o=>{if(!f&&o.name&&o.name.indexOf(pre)===0)f=o});return f}
@@ -2173,85 +2240,16 @@ function vhBox(root){   // caixa do modelo JÁ com o esqueleto aplicado (a caixa
  });
  return box;
 }
-/* Fallback 3D leve: mantém os três veículos e a loja funcionais mesmo sem vehicles/scene.gltf.
-   Quando o pack original existir, os GLTFs continuam tendo prioridade. */
-const VH_MATS={};
-function vhPMat(id,color,emissive=0x000000){
- if(!VH_MATS[id])VH_MATS[id]=new THREE.MeshStandardMaterial({color,metalness:.48,roughness:.48,emissive,emissiveIntensity:.45});
- return VH_MATS[id];
-}
-function vhPBox(g,w,h,l,x,y,z,mat,ry=0,rz=0){
- const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,l),mat);m.position.set(x,y,z);m.rotation.set(0,ry,rz);m.castShadow=false;m.receiveShadow=false;g.add(m);return m;
-}
-function vhPCyl(g,rt,rb,len,x,y,z,mat,rx=Math.PI/2,ry=0,rz=0,seg=8){
- const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,len,seg),mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=false;m.receiveShadow=false;g.add(m);return m;
-}
-function vhPCone(g,r,len,x,y,z,mat,rx=Math.PI/2,ry=0,rz=0){
- const m=new THREE.Mesh(new THREE.ConeGeometry(r,len,8),mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=false;m.receiveShadow=false;g.add(m);return m;
-}
-function vhMakeProcedural(d){
- const g=new THREE.Group(),red=vhPMat('red',0x70212b),light=vhPMat('light',0xa33a36),dark=vhPMat('dark',0x202631),metal=vhPMat('metal',0x59616a),gold=vhPMat('gold',0xb88942),glass=vhPMat('glass',0x173d50,0x102a3a),glow=vhPMat('glow',0xff762c,0xff3a08);
- if(d.n==='Interceptor'){
-  vhPBox(g,.92,.46,3.65,0,0,0,red);
-  vhPBox(g,.68,.24,1.55,0,.31,-.2,light);
-  vhPCone(g,.43,1.18,0,.02,2.35,light);
-  vhPBox(g,1.8,.12,.9,1.2,-.02,.05,red,0,-.08);vhPBox(g,1.8,.12,.9,-1.2,-.02,.05,red,0,.08);
-  vhPBox(g,.12,.56,.8,.0,.34,-1.55,light);
-  vhPBox(g,.5,.25,.58,0,.42,.7,glass);
-  for(const x of[-.48,.48]){
-   vhPCyl(g,.22,.28,.85,x,-.04,-1.75,dark);
-   vhPCone(g,.23,.38,x,-.04,-2.35,glow);
-   vhPBox(g,.12,.52,.34,x,-.32,-.5,metal,0,x>0?-.1:.1);
-  }
- }else if(d.n==='Thresher'){
-  vhPBox(g,1.9,1.05,8.2,0,0,-.1,red);
-  vhPBox(g,1.45,.55,3.1,0,.38,-.2,light);
-  vhPCone(g,.9,2.05,0,.03,5.0,light);
-  vhPBox(g,.95,.35,1.25,0,.72,1.55,glass);
-  vhPBox(g,2.45,.18,2.15,2.05,-.03,-.25,red,0,-.10);
-  vhPBox(g,2.45,.18,2.15,-2.05,-.03,-.25,red,0,.10);
-  vhPBox(g,.22,.95,2.5,0,.48,-3.0,light);
-  for(const x of[-2.25,2.25]){
-   vhPCyl(g,.57,.68,2.8,x,-.03,-2.0,dark);
-   vhPCone(g,.48,.55,x,-.03,-3.68,glow);
-   vhPBox(g,.5,.28,1.2,x,.35,1.0,metal);
-   vhPCyl(g,.12,.16,1.0,x,-.72,-.4,metal,.15,0,x>0?.2:-.2);
-  }
-  vhPBox(g,.3,.65,1.2,0,.8,-2.7,gold);
- }else{   // Scorpius: plataforma de artilharia com tripé, torre e canhão
-  vhPCyl(g,.8,.92,.34,0,.25,0,dark,0,0,0,9);
-  vhPCyl(g,.48,.62,.58,0,.7,0,red,0,0,0,8);
-  vhPBox(g,1.0,.7,1.0,0,1.15,-.05,light);
-  vhPBox(g,.72,.34,.58,0,1.62,.22,red);
-  vhPBox(g,.18,.22,.22,0,1.65,.63,glass);
-  for(let i=0;i<3;i++){
-   const a=i*Math.PI*2/3,x=Math.sin(a),z=Math.cos(a);
-   vhPCyl(g,.12,.18,1.25,x*.66,-.34,z*.66,metal,.18,x*.35,-z*.35);
-   vhPCyl(g,.13,.13,.75,x*1.12,-.85,z*1.12,dark,0,0,0);
-  }
-  for(const x of[-.24,.24]){
-   vhPCyl(g,.105,.14,1.55,x,1.55,1.05,metal);
-   vhPCone(g,.11,.28,x,1.55,1.96,glow);
-  }
-  vhPBox(g,.14,.78,.2,0,2.0,-.34,gold);
- }
- g.userData.owmProcedural=true;g.rotation.order='YXZ';g.visible=false;scene.add(g);
- const rad=d.n==='Thresher'?11.5:d.n==='Interceptor'?6.7:4.8;
- return{g,d,r:rad,st:'wait',t:0,age:Math.random()*6,x:0,z:0,gy:0,yaw:0,roll:0,yawPrev:0,dT:0,gone:false};
-}
 function vhMake(d){
- if(VH.procedural||!VH.tpl)return vhMakeProcedural(d);
- const src=vhFind(VH.tpl,d.pre);
- if(!src){console.warn('[OWM] veículo não achado no glTF; usando fallback:',d.pre);return vhMakeProcedural(d)}
+ const src=vhFind(VH.tpl,d.pre);if(!src){console.warn('[OWM] veículo não achado no glTF:',d.pre);return null}
  const inner=fbClone(src);
  for(const h of d.hide||[]){const o=inner.getObjectByName(h);if(o)o.visible=false}
  const g=new THREE.Group();g.add(inner);g.updateMatrixWorld(true);
- const b=vhBox(inner),sz=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3()),s=d.len/Math.max(.01,sz.z);
- inner.scale.setScalar(s);inner.position.set(-c.x*s,-b.min.y*s,-c.z*s);
+ const b=vhBox(inner),sz=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3()),s=d.len/Math.max(.01,sz.z);   // +Z = frente (faróis na frente, jatos atrás)
+ inner.scale.setScalar(s);inner.position.set(-c.x*s,-b.min.y*s,-c.z*s);   // centro no chão, escala em metros
  g.rotation.order='YXZ';g.visible=false;scene.add(g);
  return{g,d,r:Math.max(sz.x,sz.z)*s/2+3.5,st:'wait',t:0,age:Math.random()*6,x:0,z:0,gy:0,yaw:0,roll:0,yawPrev:0,dT:0,gone:false};
 }
-
 function vhSpot(){   // área livre perto do jogador, grande o bastante p/ os 3 veículos
  for(const rad of[17,12,8]){const q=fbPlace(16,32,rad);if(q)return q}
  return[P.p.x-Math.sin(P.yaw)*14,P.p.z-Math.cos(P.yaw)*14];
@@ -2259,7 +2257,7 @@ function vhSpot(){   // área livre perto do jogador, grande o bastante p/ os 3 
 function vhBegin(){
  STM.vh={ph:'load',t:0,stay:VH_STAY};STM.clr=true;STM.inter=VH_STAY;STM.vhMsg='Veículos chegando…';
  vhLoad().then(()=>{if(!STM.vh||STM.vh.ph!=='load'||!STM.on||!CAMB)return;vhLaunch()})
-  .catch(e=>{VH.failed=true;console.error('[OWM] veículos:',e);toast('Não consegui carregar os veículos (pasta vehicles/ ao lado do index.html). '+(e&&e.message||''));vhFinish()});
+  .catch(e=>{VH.failed=true;console.error('[OWM] veículos:',e);toast('Não consegui carregar os veículos. Coloque destiny_2_red_legion_vehicles_part23.zip na raiz do repositório. '+(e&&e.message||''));vhFinish()});
 }
 function vhLaunch(){
  try{
@@ -2353,10 +2351,7 @@ function vhUpdate(dt){
  vhShop(S.ph==='in'||S.ph==='stay');
 }
 function vhReset(){
- for(const v of VH.list){
-  scene.remove(v.g);
-  if(v.g&&v.g.userData&&v.g.userData.owmProcedural)v.g.traverse(o=>{if(o.geometry)o.geometry.dispose()});
- }
+ for(const v of VH.list)scene.remove(v.g);
  VH.list.length=0;VH.shopV=null;if(VH.shopEl)VH.shopEl.classList.remove('on');
  STM.vh=null;STM.vhMsg='';
 }
@@ -2918,7 +2913,7 @@ function strUpdate(dt){
   if(STR.pending>0&&alive<WV_ALIVE){STR.spawnT-=dt;if(STR.spawnT<=0){strSpawnOne();STR.pending--;alive++;STR.spawnT=1.5}}   // só repõe quando há menos de WV_ALIVE vivos
   if(STR.pending===0&&alive===0&&!fbBossAlive()){   // onda acabou
    if(STM.vh)vhUpdate(dt);                                   // veículos aí: a próxima onda só vem quando eles sumirem
-   else if(STM.wave%5===4)vhBegin();             // onda antes do chefe (4, 9, 14...): chegam os veículos
+   else if(STM.wave%5===4&&!VH.failed)vhBegin();             // onda antes do chefe (4, 9, 14...): chegam os veículos
    else strNextWave(STM.wave);                               // senão a próxima começa NA HORA (sem intervalo)
   }
  }
@@ -6321,7 +6316,7 @@ else if(wantHit&&fishTarget&&(!hit||hit.terr||fishTarget.t<hit.t)&&(!phit||fishT
 else if(breaking&&phit&&isTreeK(phit.c.k)){mining=true;prog=0;tgtKey='';crackMesh.visible=false;treeTry(phit.c)}
 else if(breaking&&phit){const c=phit.c,key='p'+c.cx+','+c.cz+','+c.id;if(key!==tgtKey){tgtKey=key;prog=0}prog+=dt;mining=true;const stage=Math.min(9,Math.floor(prog/c.hard*10)),ch=Math.min(c.hy,2.2);crackMesh.visible=true;crackMesh.scale.set(c.hx*2+.06,ch,c.hz*2+.06);crackMesh.position.set(c.x,c.y0+ch/2,c.z);if(crackMat.map!==crackTextures[stage]){crackMat.map=crackTextures[stage];crackMat.needsUpdate=true}if(prog>=c.hard){breakProp(c);prog=0;tgtKey='';crackMesh.visible=false}}
 else if(breaking&&hit&&!hit.terr&&hit.y>0){const key=hit.x+','+hit.y+','+hit.z;if(key!==tgtKey){tgtKey=key;prog=0}prog+=dt;mining=true;const hard=BL[getB(hit.x,hit.y,hit.z)].h;const stage=Math.min(9,Math.floor((prog/hard)*10));crackMesh.visible=true;crackMesh.scale.set(1,1,1);crackMesh.position.set(hit.x+.5,hit.y+.5,hit.z+.5);if(crackMat.map!==crackTextures[stage]){crackMat.map=crackTextures[stage];crackMat.needsUpdate=true}if(prog>=hard){breakAt(hit);prog=0;tgtKey=''}}else{mining=false;prog=0;tgtKey='';crackMesh.visible=false}if(mining)swT+=dt*12;const sp=Math.hypot(P.vel.x,P.vel.z);bobT+=sp*dt*1.7;const bobA=S.bob&&P.og?Math.min(1,sp/4.8)*(isSprint?1.3:1):0,bobY=Math.sin(bobT*2)*.02*bobA;const lateral=P.vel.x*Math.cos(P.yaw)-P.vel.z*Math.sin(P.yaw);camLean+=(cl(-lateral*.006,-.045,.045)-camLean)*(1-Math.exp(-dt*9));if(P.landV>1)camLand=Math.max(camLand,cl(P.landV*.0035,0,.105));camLand*=Math.exp(-dt*12);if(playingAnim){animTime+=dt;if(animTime>playingAnim.duration){playingAnim=null;animTime=0}}if(tp3){const robloxShift=!!S.shiftLock&&(S.shiftStyle===1||S.shiftStyle===2),shoulder=S.shiftLock?(robloxShift?1.05:.68):0,sx=Math.cos(P.yaw)*shoulder,sz=-Math.sin(P.yaw)*shoulder;let t=0;while(t<(S.shiftLock?(robloxShift?4.8:4.15):3.5)){const q=t+.25,x=eye.x-fwd.x*q+sx,y=eye.y-fwd.y*q,z=eye.z-fwd.z*q+sz;if(getB(Math.floor(x),Math.floor(y),Math.floor(z))||y<groundH(x,z)+.15)break;t=q}cam.position.set(eye.x-fwd.x*t+sx,eye.y-fwd.y*t+bobY-camLand,eye.z-fwd.z*t+sz);}else{cam.position.copy(eye);cam.position.x-=Math.sin(P.yaw)*.03;cam.position.z-=Math.cos(P.yaw)*.03;   /* câmera um pouco à frente do pescoço: olhando pra baixo aparece o tronco */
-cam.position.y+=anim.fx.dip+bobY-camLand;cam.position.x+=Math.cos(bobT)*.008*bobA}cam.rotation.set(P.pitch,P.yaw,(tp3?camLean*.7:anim.fx.roll+camLean));const targetFov=S.fov+cl((sp-4.8)*2.4,0,8)+(JPM.on?3.5:0)+((dashT>0||dashRunOn)?2.5:0);cam.fov+=(targetFov-cam.fov)*(1-Math.exp(-dt*8));cam.updateProjectionMatrix();updateTablePlacement();if(COIL.on){const ct=performance.now()*.001;cam.position.x+=Math.sin(ct*31)*COIL.SHAKE;cam.position.y+=Math.cos(ct*23)*COIL.SHAKE*.62;cam.rotation.z+=Math.sin(ct*27)*.006;}updateCamShake(dt);try{const jpIdleFlight=!!(JP.owned&&JPM.on&&!playingAnim);anim.update(dt,{inGame:true,lockFwd:(!!S.shiftLock&&S.shiftStyle===2)||jpIdleFlight,attack:(breaking||punchT>0)&&!CN.mount,sprint:jpIdleFlight?false:isSprint,tp3,p:P.p,vel:jpIdleFlight?JP_ANIM_ZERO_VEL:P.vel,og:jpIdleFlight?true:P.og,mining,swT,cp:P.pitch,landV:jpIdleFlight?0:P.landV,coil:COIL.on,dash:jpIdleFlight?-1:(dashT>0?1-dashT/DASH.DURATION:-1),custom:playingAnim?{anim:playingAnim,time:animTime}:null});if(jpIdleFlight){const jb=anim.bones;if(jb){if(jb.LL)jb.LL.rotation.set(0,0,0);if(jb.RL)jb.RL.rotation.set(0,0,0);if(jb.LK)jb.LK.rotation.set(0,0,0);if(jb.RK)jb.RK.rotation.set(0,0,0)}}}catch(e){const em=String(e&&e.message||e);if((tick.ae=tick.ae||{})[em]===undefined&&Object.keys(tick.ae).length<4){tick.ae[em]=1;console.error('[OWM] anim.update: '+em+' | '+String(e&&e.stack||'').split('\n').slice(0,4).join(' <- '))}}P.landV=0;jpUpdate(dt);updateParticles(dt);updateTrees(dt);OWM.leaves.update(dt);updateLeafDrops(dt);updateAppleDrops(dt);updateFish(dt);updatePlacedTables(dt);updateBenchPrompt();{const dzn=sstep(.18,.55,desertW(P.p.x,P.p.z));OWM.sand.update(dt,dzn);if(OWM.wind)OWM.wind.update(dt,dzn,waterSurf(P.p.x,P.p.z)>P.p.y+1.55)}post.setGround(groundH(P.p.x,P.p.z));post.update(dt);updateWater(dt);if((saveT+=dt)>20){saveT=0;saveWorld()}updateCollect(dt);stream(P.p.x>>4,P.p.z>>4,S.dist,2);}
+cam.position.y+=anim.fx.dip+bobY-camLand;cam.position.x+=Math.cos(bobT)*.008*bobA}cam.rotation.set(P.pitch,P.yaw,(tp3?camLean*.7:anim.fx.roll+camLean));const targetFov=S.fov+cl((sp-4.8)*2.4,0,8)+(JPM.on?3.5:0)+((dashT>0||dashRunOn)?2.5:0);cam.fov+=(targetFov-cam.fov)*(1-Math.exp(-dt*8));cam.updateProjectionMatrix();updateTablePlacement();if(COIL.on){const ct=performance.now()*.001;cam.position.x+=Math.sin(ct*31)*COIL.SHAKE;cam.position.y+=Math.cos(ct*23)*COIL.SHAKE*.62;cam.rotation.z+=Math.sin(ct*27)*.006;}updateCamShake(dt);try{const jpIdleFlight=!!(JP.owned&&JPM.on&&!playingAnim);anim.update(dt,{inGame:true,lockFwd:(!!S.shiftLock&&S.shiftStyle===2)||jpIdleFlight,attack:(breaking||punchT>0)&&!CN.mount,sprint:jpIdleFlight?false:isSprint,tp3,p:P.p,vel:jpIdleFlight?JP_ANIM_ZERO_VEL:P.vel,og:jpIdleFlight?true:P.og,mining,swT,cp:P.pitch,landV:jpIdleFlight?0:P.landV,coil:COIL.on,dash:jpIdleFlight?-1:(dashT>0?1-dashT/DASH.DURATION:-1),custom:playingAnim?{anim:playingAnim,time:animTime}:null});jpApplyFlightPose(dt,jpIdleFlight)}catch(e){const em=String(e&&e.message||e);if((tick.ae=tick.ae||{})[em]===undefined&&Object.keys(tick.ae).length<4){tick.ae[em]=1;console.error('[OWM] anim.update: '+em+' | '+String(e&&e.stack||'').split('\n').slice(0,4).join(' <- '))}}P.landV=0;jpUpdate(dt);updateParticles(dt);updateTrees(dt);OWM.leaves.update(dt);updateLeafDrops(dt);updateAppleDrops(dt);updateFish(dt);updatePlacedTables(dt);updateBenchPrompt();{const dzn=sstep(.18,.55,desertW(P.p.x,P.p.z));OWM.sand.update(dt,dzn);if(OWM.wind)OWM.wind.update(dt,dzn,waterSurf(P.p.x,P.p.z)>P.p.y+1.55)}post.setGround(groundH(P.p.x,P.p.z));post.update(dt);updateWater(dt);if((saveT+=dt)>20){saveT=0;saveWorld()}updateCollect(dt);stream(P.p.x>>4,P.p.z>>4,S.dist,2);}
 
 let last=performance.now();
 addEventListener('visibilitychange',()=>{last=performance.now()});
