@@ -2200,9 +2200,7 @@ button,.btn{font-weight:700;letter-spacing:.01em}
     linear-gradient(145deg,#1a1e23 0%,#111519 58%,#0d1013 100%);
 }
 .screen.dim{background:rgba(7,9,12,.82)}
-.screen.title{
-  background:linear-gradient(145deg,#181c21 0%,#101418 65%,#090c10 100%) !important;
-}
+.screen.title{background:transparent!important}
 .screen.title::before{display:none!important}
 .logo,.logo .m{
   color:#c3c8ce!important;
