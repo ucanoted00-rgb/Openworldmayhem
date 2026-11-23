@@ -157,7 +157,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
 
 <!-- Código do Jogo (Ordem lógica de execução) -->
-<script src="core.js"></script>
+<script src="core.js?v=panorama2"></script>
 <script src="shaders.js"></script>   <!-- SHADERS: presets, editor visual sem código, estimativa de custo e salvar/importar (usa OWM.post.setFx de postprocess.js) -->
 <script src="survival.js"></script>   <!-- lógica testável de fome e sede -->
 <script src="river-logic.js"></script> <!-- decisões determinísticas e testadas para rios por bioma -->
@@ -182,6 +182,9 @@
 <script src="lobby-data.js"></script>   <!-- mapa do modo Lobby (glTF embutido) -->
 <script src="flight-ui.js"></script>
 <script src="game.js"></script>
+<script>
+(()=>{document.querySelectorAll('#ui .visual-grid button').forEach(b=>{if(b.textContent.trim().startsWith('Fundo da tela inicial:'))b.remove()})})();
+</script>
 <script src="accounts-core.js"></script>   <!-- lógica local de contas, pedidos e HMAC -->
 <script async src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js" onload="window.OWMAccountsPeerReady&&window.OWMAccountsPeerReady()" onerror="window.OWMAccountsPeerFailed&&window.OWMAccountsPeerFailed()"></script>   <!-- PeerJS 1.5.5, carregado sem bloquear o jogo -->
 <script src="accounts.js"></script>   <!-- contas e amigos P2P, sem servidor próprio -->
