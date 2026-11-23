@@ -57,7 +57,7 @@ const cam=new THREE.PerspectiveCamera(85,1,.1,200);cam.rotation.order='YXZ';scen
 /* ---------- Sistema de telas ---------- */
 const screens={};
 function mkScreen(id,title,cls){const s=E('div','screen '+(cls||'solid')+' hidden',null,$('#ui'));s.dataset.scr=id;if(title)E('h2','',title,s);return screens[id]=s}
-const go=id=>{for(const k in screens)screens[k].classList.toggle('hidden',k!==id);if(OWM.onScreen)OWM.onScreen(id)};
+const go=id=>{document.body.classList.toggle('owm-title-screen',id==='title');for(const k in screens)screens[k].classList.toggle('hidden',k!==id);if(OWM.onScreen)OWM.onScreen(id)};
 const row=p=>E('div','row',null,p);
 const fld=(l,p)=>{const d=E('div','fld',null,p);E('label','',l,d);return E('input','',null,d)};
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.add('hidden'),2200)}
