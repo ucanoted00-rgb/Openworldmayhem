@@ -11,7 +11,7 @@ const O=window.OWM;
 if(!O||!O.screens||!O.screens.settings||!O.screens.pause)return;
 const {E,B,go,ld,st,toast,$}=O;
 const KEY='bc.hud.layout.v3',V2='bc.hud.layout.v2',V1='bc.hud.layout.v1';
-const IDS=['joy','bJump','bPunch','bM1','bM2','bSwap','bDash','bLock','bShiftLock','bInv','bSprint','bPause','collect'];
+const IDS=['joy','bJump','bPunch','bM1','bM2','bSwap','bDash','bFly','bLock','bShiftLock','bInv','bSprint','bPause','collect'];
 const SEL={};IDS.forEach(id=>SEL[id]='#'+id);
 const META={
  joy:{label:'Joystick',min:80,max:200,drag:true,round:true},
@@ -21,6 +21,7 @@ const META={
  bM2:{label:'M2 (8 dano)',min:40,max:112,drag:true},
  bSwap:{label:'Trocar M1/M2 ⇄ Chute/Block',min:40,max:112,drag:true},
  bDash:{label:'Dash',min:40,max:112,drag:true},
+ bFly:{label:'Voo (Jetpack)',min:40,max:112,drag:true},
  bLock:{label:'Lock-on (LOCK)',min:38,max:88,drag:true},
  bShiftLock:{label:'Shift Lock (SL)',min:38,max:88,drag:true},
  bInv:{label:'Inventário',min:40,max:112,drag:true},
@@ -39,6 +40,8 @@ const isEmpty=c=>!c||['portrait','landscape'].every(o=>!Object.keys(c.profiles[o
 const entry=(cfg,id,create)=>{const p=cfg.profiles[ORI()].controls;return p[id]||(create?(p[id]={}):null)};
 
 let active=null,draft=null,editing=false,selected=null,returnScreen='pause',snapOn=true,hudWasHidden=false;
+const flightOverrideStyle=E('style',null,null,document.head);flightOverrideStyle.id='hud-flight-custom-style';
+
 
 /* ---------- medidas: safe areas e tamanhos originais (vindos do CSS) ---------- */
 const probe=E('div',null,null,document.body);
@@ -55,15 +58,17 @@ let defCache=null,defKey='';
 function defaults(){
  const key=innerWidth+'x'+innerHeight;
  if(defCache&&defKey===key)return defCache;
+ const overrideDisabled=flightOverrideStyle.disabled;
+ flightOverrideStyle.disabled=true;
  for(const id of IDS){const el=$(SEL[id]);if(el)clearEl(el,id)}
  defCache={};
  for(const id of IDS){
   const el=$(SEL[id]);
   if(id==='collect'||!el){defCache[id]={size:COLLECT_BASE,font:13};continue}
-  const cs=getComputedStyle(el);   // mesmo com display:none o width/font-size computados vêm do CSS
+  const cs=getComputedStyle(el);
   defCache[id]={size:parseFloat(cs.width)||64,font:parseFloat(cs.fontSize)||13};
  }
- defKey=key;return defCache;
+ defKey=key;flightOverrideStyle.disabled=overrideDisabled;return defCache;
 }
 
 /* ---------- aplicar layout nos botões reais ---------- */
@@ -95,6 +100,7 @@ function apply(cfg,isEditing){
    else{el.style.bottom=clamp(p.oy,ins.b,H-size-ins.t)+'px';el.style.top='auto'}
   }
  }
+ syncFlightOverride(cfg,isEditing,W,H,ins,d);
 }
 function posFromRect(left,top,w,h){
  const W=innerWidth,H=innerHeight,ax=left+w/2<W/2?'l':'r',ay=top+h/2<H/2?'t':'b';
