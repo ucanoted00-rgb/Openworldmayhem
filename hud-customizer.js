@@ -39,7 +39,7 @@ const emptyCfg=()=>({schema:'owm-hud-layout',version:3,profiles:{portrait:{contr
 const isEmpty=c=>!c||['portrait','landscape'].every(o=>!Object.keys(c.profiles[o].controls).length);
 const entry=(cfg,id,create)=>{const p=cfg.profiles[ORI()].controls;return p[id]||(create?(p[id]={}):null)};
 
-let active=null,draft=null,editing=false,selected=null,returnScreen='pause',snapOn=true,hudWasHidden=false;
+let active=null,draft=null,editing=false,selected=null,returnScreen='pause',snapOn=true,hudWasHidden=false,flyDisplayBeforeEditor=null;
 const flightOverrideStyle=E('style',null,null,document.head);flightOverrideStyle.id='hud-flight-custom-style';
 
 
@@ -94,6 +94,7 @@ function apply(cfg,isEditing){
   const el=$(SEL[id]);if(!el)continue;
   clearEl(el,id);
   const e=ctl[id]||{},m=META[id];
+  if(id==='bFly'&&isEditing)el.style.display='flex';
   const hidden=e.visible===false&&id!=='bPause';
   if(e.opacity!=null)el.style.opacity=String(clamp(+e.opacity,.15,1));
   if(hidden){if(isEditing)el.style.opacity='.28';else el.style.display='none'}
@@ -323,6 +324,7 @@ function onKey(e){
 /* ---------- ações ---------- */
 function open(from){
  returnScreen=from||'pause';draft=clone(active||emptyCfg());selected=null;editing=true;
+ const fly=$('#bFly');flyDisplayBeforeEditor=fly?fly.style.display:'';
  hudWasHidden=hudEl.classList.contains('hidden');hudEl.classList.remove('hidden');
  document.body.classList.add('hud-editing');
  for(const k in O.screens)O.screens[k].classList.add('hidden');   // sem go(): não troca a música
@@ -334,7 +336,11 @@ function close(){
  editing=false;selected=null;root.classList.add('hidden');menu.classList.add('hidden');showGuides(null,null);
  document.body.classList.remove('hud-editing');
  if(hudWasHidden)hudEl.classList.add('hidden');
- apply(active,false);go(returnScreen);
+ apply(active,false);
+ const fly=$('#bFly'),savedFly=active&&active.profiles&&active.profiles[ORI()]&&active.profiles[ORI()].controls&&active.profiles[ORI()].controls.bFly;
+ if(fly)fly.style.display=savedFly&&savedFly.visible===false?'none':(flyDisplayBeforeEditor==null?'':flyDisplayBeforeEditor);
+ flyDisplayBeforeEditor=null;
+ go(returnScreen);
 }
 function cancel(){close()}
 function save(){
