@@ -2567,3 +2567,11 @@ input::placeholder,textarea::placeholder{color:#818a93!important}
   .btn,.tb{font-family:var(--f)}
 }
 @media(prefers-reduced-motion:reduce){.btn,.tb,.main-hub-item{transition:none}}
+
+
+/* OWM UI v7 — texto cinza em todas as telas e FLY visível no editor HUD. */
+#ui .screen *{color:#b9c0c7}
+#ui .screen h1,#ui .screen h2,#ui .screen h3{color:#d0d5da}
+#ui .screen .btn{color:#bfc5cb}
+#ui .screen .btn.primary{color:#e0e4e8}
+body.hud-editing #bFly{display:flex!important}
