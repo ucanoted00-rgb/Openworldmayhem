@@ -21,7 +21,7 @@ body::after{content:"";position:fixed;inset:0;z-index:1000;pointer-events:none;o
 @keyframes screenIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
 .solid{background:radial-gradient(ellipse at 50% 0%,#232638 0%,#0e0f15 70%)}
 .dim{background:rgba(5,6,10,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.title{background:radial-gradient(ellipse at center,#0000 30%,#000b),linear-gradient(#0000 55%,#000a);overflow:hidden;isolation:isolate}
+.title{background:transparent;overflow:hidden;isolation:isolate}
 h2{margin:0 0 10px;font:800 22px var(--f);letter-spacing:.14em;text-transform:uppercase;text-align:center}
 
 .blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.35;pointer-events:none;z-index:-1}
@@ -55,12 +55,14 @@ h2{margin:0 0 10px;font:800 22px var(--f);letter-spacing:.14em;text-transform:up
 
 .lw{position:relative;margin:0 0 34px;text-align:center;width:min(94vw,1000px)}
 .logo-image-wrap{display:flex;align-items:center;justify-content:center;width:100%;max-width:1000px}
-.title-logo-img{display:block;width:min(94vw,1000px);max-height:38vh;height:auto;object-fit:contain;filter:drop-shadow(0 5px 0 #0009);user-select:none;-webkit-user-drag:none}
+.title-logo-img{display:block;width:min(94vw,1000px);max-height:38vh;height:auto;object-fit:contain;filter:brightness(4.5) contrast(1.4) drop-shadow(0 5px 0 #0009);user-select:none;-webkit-user-drag:none}
 .logo{display:flex;flex-direction:column;align-items:center;font:italic 900 clamp(34px,10.5vw,76px)/.95 var(--f);color:#fff;transform:skewX(-6deg);text-shadow:4px 4px 0 var(--ac),8px 8px 0 #000a}
 .logo .m{color:var(--ac);text-shadow:4px 4px 0 #3a0a10,8px 8px 0 #000a}
 .ed{display:inline-block;margin-top:20px;padding:3px 16px;background:var(--ac);border-radius:20px;font:800 12px var(--f);letter-spacing:.2em}
 .splash{position:absolute;right:-18px;bottom:-30px;color:#ffe14a;font:800 clamp(13px,3.8vw,19px) var(--f);white-space:nowrap;text-shadow:2px 2px 0 #000a;transform:rotate(-12deg);animation:pl .6s ease-in-out infinite alternate}
 @keyframes pl{to{transform:rotate(-12deg) scale(1.1)}}
+.screen.title>.dsc.np,.screen.title>.foot{display:none!important}
+.title>.blob{display:none}
 .foot{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#c9ccd8;pointer-events:none}
 .pg{width:min(300px,80vw);height:12px;background:#0b0c11;border:2px solid var(--ln);border-radius:8px;overflow:hidden}.pg i{display:block;height:100%;width:0;background:var(--ac);animation:ld .9s linear forwards}@keyframes ld{to{width:100%}}
 @media (prefers-reduced-motion:reduce){.splash{animation:none}.blob{animation:none}}
