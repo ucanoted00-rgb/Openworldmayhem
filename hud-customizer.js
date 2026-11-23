@@ -72,6 +72,21 @@ function defaults(){
 }
 
 /* ---------- aplicar layout nos botões reais ---------- */
+function syncFlightOverride(cfg,isEditing,W,H,ins,d){
+ const controls=cfg?cfg.profiles[ORI()].controls:{},e=controls.bFly||{},m=META.bFly,rules=[];
+ const size=e.size!=null?clamp(+e.size,m.min,m.max):(d.bFly?d.bFly.size:64);
+ if(e.size!=null){rules.push('width:'+size+'px!important','height:'+size+'px!important')}
+ const p=e.pos;
+ if(p&&m.drag){
+  if(p.ax==='l'){rules.push('left:'+clamp(+p.ox,ins.l,W-size-ins.r)+'px!important','right:auto!important')}
+  else{rules.push('right:'+clamp(+p.ox,ins.r,W-size-ins.l)+'px!important','left:auto!important')}
+  if(p.ay==='t'){rules.push('top:'+clamp(+p.oy,ins.t,H-size-ins.b)+'px!important','bottom:auto!important')}
+  else{rules.push('bottom:'+clamp(+p.oy,ins.b,H-size-ins.t)+'px!important','top:auto!important')}
+ }
+ if(e.visible===false&&!isEditing)rules.push('display:none!important');
+ flightOverrideStyle.textContent=rules.length?'#bFly{'+rules.join(';')+'}':'';
+}
+
 function apply(cfg,isEditing){
  const d=defaults(),W=innerWidth,H=innerHeight,ins=insets();
  const ctl=cfg?cfg.profiles[ORI()].controls:{};
