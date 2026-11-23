@@ -17,8 +17,6 @@ const DEF={fov:70,dist:6,sens:100,bright:50,rq:5,fps:0,invert:0,bob:1,shadow:tou
 const saved=ld('bc.s',{});
 if(!saved.v){saved.tone=2;try{localStorage.setItem('bc.s',JSON.stringify(saved))}catch(e){}}
 const S={...DEF,...saved};S.v=1;
-/* A tela inicial sempre usa o panorama 3D; ignora a preferência antiga de fundo preto/tempestade. */
-S.titleBg=0;st('bc.s',S);
 const _aaNew=saved.aa===undefined,_chqNew=saved.chq===undefined,_tqNew=saved.tq===undefined;   // FXAA padrão decidido abaixo, quando o nível do aparelho já é conhecido
 
 /* ---------- Renderer, cena e câmera ---------- */
