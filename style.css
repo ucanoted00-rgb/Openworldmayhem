@@ -1347,3 +1347,7 @@ body.world-fx-fallback.world-fx-enabled.ui-pixelated #c{image-rendering:pixelate
 body.ui-square-buttons button,
 body.ui-square-buttons .btn,
 body.ui-square-buttons .main-hub-item{border-radius:0!important}
+
+/* Tela inicial: preservar o panorama 3D sem vinheta ou textos promocionais. */
+body:has(#ui .screen.title:not(.hidden)) #vig{opacity:0!important}
+#ui .screen.title>.lw .splash{display:none!important}
